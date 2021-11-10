@@ -1,0 +1,140 @@
+cat: /var/spool/torque/aux//4543448.herman.hpc.lji.orggpu: No such file or directory
+compute-1-1.hpc.lji.org
+This is a new update to coloc.
+Loading required package: survival
+Loading required package: Matrix
+
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
+2.02e-149 2.33e-142  8.68e-11  0.00e+00  1.00e+00 
+[1] "PP abf for shared variant: 100%"
+Joining, by = c("chr", "pos")
+PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
+2.42e-147 2.33e-142  1.04e-08  0.00e+00  1.00e+00 
+[1] "PP abf for shared variant: 100%"
+Joining, by = c("chr", "pos")
+
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
+ 2.81e-15  9.05e-01  2.96e-19  0.00e+00  9.52e-02 
+[1] "PP abf for shared variant: 9.52%"
+PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
+ 5.61e-13  9.05e-01  5.90e-17  0.00e+00  9.52e-02 
+[1] "PP abf for shared variant: 9.52%"
+
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF  PP.H0.abf  PP.H1.abf  PP.H2.abf  PP.H3.abf  PP.H4.abf 
+0.00000000 0.00000000 0.00000172 0.00000000 1.00000000 
+[1] "PP abf for shared variant: 100%"
+Joining, by = c("chr", "pos")
+
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF  PP.H0.abf  PP.H1.abf  PP.H2.abf  PP.H3.abf  PP.H4.abf 
+0.01640000 0.85000000 0.00000258 0.00000000 0.13400000 
+[1] "PP abf for shared variant: 13.4%"
+
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
+   0.0000    0.0000    0.0332    0.0000    0.9670 
+[1] "PP abf for shared variant: 96.7%"
+Joining, by = c("chr", "pos")
+
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
+ 0.00e+00  0.00e+00  6.65e-28  0.00e+00  1.00e+00 
+[1] "PP abf for shared variant: 100%"
+Joining, by = c("chr", "pos")
+
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF    PP.H0.abf    PP.H1.abf    PP.H2.abf    PP.H3.abf    PP.H4.abf 
+0.0000000000 0.0000000000 0.0000000469 0.0000000000 1.0000000000 
+[1] "PP abf for shared variant: 100%"
+Joining, by = c("chr", "pos")
+
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
+0.0000000 0.0000000 0.0000683 0.0000000 1.0000000 
+[1] "PP abf for shared variant: 100%"
+Joining, by = c("chr", "pos")
+
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
+0.0000000 0.0000000 0.0000117 0.0000000 1.0000000 
+[1] "PP abf for shared variant: 100%"
+Joining, by = c("chr", "pos")
+
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF There were 50 or more warnings (use warnings() to see the first 50)
+
+         ----- Job Summary Statistics -----
+                    Queue: default                  
+                   Job ID: 4543448.herman.hpc.lji.org
+                 Job Name: temp_script_Coloc_T1D_34012112_Gaulton_DICE_eQTL_TH17.sh
+                Node name: compute-1-1.hpc.lji.org  
+Job duration on this node: 00:06:24                 
+          Node Multiplier: 1.074                    
+      Normalized walltime: 00:06:52                 
+
+Job Requested resources:
+    nodes=1:ppn=1,mem=20gb,walltime=04:00:00,neednodes=1:ppn=1
+Used resources (as reported by Torque):
+    cput=00:05:55,vmem=2668452kb,walltime=00:06:52,mem=2434380kb,energy_used=0
+
+
+Additional Statistics (cgroup stats):
+
+CPU core numbers on node assigned for usage: 4
+CPU work distribution:
+CPU Core #4: 100.00%
+
+Memory requested: 20480 MB
+Memory used:      3041 MB
+Swap used:        0 MB
+
+Number times max memory limit reached or attempted to exceed: 0
+
+Max Memory Used / Memory Requested: 14.8513%
+

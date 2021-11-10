@@ -1,0 +1,127 @@
+cat: /var/spool/torque/aux//4543442.herman.hpc.lji.orggpu: No such file or directory
+compute-1-4.hpc.lji.org
+This is a new update to coloc.
+Loading required package: survival
+Loading required package: Matrix
+
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
+    0.000     0.000     0.104     0.000     0.896 
+[1] "PP abf for shared variant: 89.6%"
+Joining, by = c("chr", "pos")
+
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
+ 0.00e+00  0.00e+00  1.34e-15  0.00e+00  1.00e+00 
+[1] "PP abf for shared variant: 100%"
+Joining, by = c("chr", "pos")
+
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
+   0.0000    0.0000    0.0332    0.0000    0.9670 
+[1] "PP abf for shared variant: 96.7%"
+Joining, by = c("chr", "pos")
+
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF   PP.H0.abf   PP.H1.abf   PP.H2.abf   PP.H3.abf   PP.H4.abf 
+0.000000000 0.000000000 0.000000458 0.000000000 1.000000000 
+[1] "PP abf for shared variant: 100%"
+Joining, by = c("chr", "pos")
+PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
+ 0.00e+00  0.00e+00  1.37e-25  3.52e-07  1.00e+00 
+[1] "PP abf for shared variant: 100%"
+Joining, by = c("chr", "pos")
+
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
+5.14e-141 3.13e-142  1.61e-02  0.00e+00  9.84e-01 
+[1] "PP abf for shared variant: 98.4%"
+Joining, by = c("chr", "pos")
+
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF    PP.H0.abf    PP.H1.abf    PP.H2.abf    PP.H3.abf    PP.H4.abf 
+0.0000000000 0.0000000000 0.0000000564 0.0000000000 1.0000000000 
+[1] "PP abf for shared variant: 100%"
+Joining, by = c("chr", "pos")
+
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF There were 42 warnings (use warnings() to see them)
+
+         ----- Job Summary Statistics -----
+                    Queue: default                  
+                   Job ID: 4543442.herman.hpc.lji.org
+                 Job Name: temp_script_Coloc_T1D_34012112_Gaulton_DICE_eQTL_CLASSICAL_MONOCYTES.sh
+                Node name: compute-1-4.hpc.lji.org  
+Job duration on this node: 00:05:59                 
+          Node Multiplier: 1.076                    
+      Normalized walltime: 00:06:26                 
+
+Job Requested resources:
+    nodes=1:ppn=1,mem=20gb,walltime=04:00:00,neednodes=1:ppn=1
+Used resources (as reported by Torque):
+    cput=00:05:33,vmem=2395212kb,walltime=00:06:26,mem=1833168kb,energy_used=0
+
+
+Additional Statistics (cgroup stats):
+
+CPU core numbers on node assigned for usage: 3
+CPU work distribution:
+CPU Core #3: 100.00%
+
+Memory requested: 20480 MB
+Memory used:      2448 MB
+Swap used:        0 MB
+
+Number times max memory limit reached or attempted to exceed: 0
+
+Max Memory Used / Memory Requested: 11.9552%
+

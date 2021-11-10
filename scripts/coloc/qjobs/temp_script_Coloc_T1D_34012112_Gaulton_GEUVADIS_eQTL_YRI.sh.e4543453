@@ -1,0 +1,164 @@
+cat: /var/spool/torque/aux//4543453.herman.hpc.lji.orggpu: No such file or directory
+compute-2-1.hpc.lji.org
+This is a new update to coloc.
+Loading required package: survival
+Loading required package: Matrix
+
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
+5.41e-138 1.49e-137  3.62e-04  0.00e+00  1.00e+00 
+[1] "PP abf for shared variant: 100%"
+Joining, by = c("chr", "pos")
+PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
+2.68e-270 8.40e-271  3.18e-03  0.00e+00  9.97e-01 
+[1] "PP abf for shared variant: 99.7%"
+Joining, by = c("chr", "pos")
+
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
+ 0.00e+00  0.00e+00  9.66e-19  0.00e+00  1.00e+00 
+[1] "PP abf for shared variant: 100%"
+Joining, by = c("chr", "pos")
+
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
+  0.00000   0.00000   0.00196   0.00000   0.99800 
+[1] "PP abf for shared variant: 99.8%"
+Joining, by = c("chr", "pos")
+
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF PP.H0.abf PP.H1.abf PP.H2.abf PP.H3.abf PP.H4.abf 
+  0.00000   0.00000   0.00015   0.12500   0.87500 
+[1] "PP abf for shared variant: 87.5%"
+Joining, by = c("chr", "pos")
+
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF 
+ ===>> after reading SNPInfoData Joining, by = c("chr", "pos")
+
+ ===>> after creating merge_EQTL_SNPInfo_DF There were 36 warnings (use warnings() to see them)
+
+         ----- Job Summary Statistics -----
+                    Queue: default                  
+                   Job ID: 4543453.herman.hpc.lji.org
+                 Job Name: temp_script_Coloc_T1D_34012112_Gaulton_GEUVADIS_eQTL_YRI.sh
+                Node name: compute-2-1.hpc.lji.org  
+Job duration on this node: 00:07:10                 
+          Node Multiplier: .883                     
+      Normalized walltime: 00:06:20                 
+
+Job Requested resources:
+    nodes=1:ppn=1,mem=20gb,walltime=04:00:00,neednodes=1:ppn=1
+Used resources (as reported by Torque):
+    cput=00:06:51,vmem=2906616kb,walltime=00:06:20,mem=2166556kb,energy_used=0
+
+
+Additional Statistics (cgroup stats):
+
+CPU core numbers on node assigned for usage: 0-47
+CPU work distribution:
+CPU Core #0: 1.16%
+CPU Core #1: 5.04%
+CPU Core #2: 2.94%
+CPU Core #3: 0.55%
+CPU Core #4: 1.97%
+CPU Core #5: 5.72%
+CPU Core #6: 3.22%
+CPU Core #7: 2.84%
+CPU Core #8: 9.91%
+CPU Core #9: 4.09%
+CPU Core #10: 4.03%
+CPU Core #11: 4.18%
+CPU Core #12: 10.39%
+CPU Core #13: 7.02%
+CPU Core #14: 4.91%
+CPU Core #15: 4.12%
+CPU Core #16: 1.54%
+CPU Core #17: 2.58%
+CPU Core #18: 1.63%
+CPU Core #19: 0.52%
+CPU Core #20: 1.69%
+CPU Core #21: 0.57%
+CPU Core #22: 0.81%
+CPU Core #23: 0.20%
+CPU Core #24: 0.19%
+CPU Core #25: 5.58%
+CPU Core #26: 0.16%
+CPU Core #27: 1.65%
+CPU Core #28: 0.65%
+CPU Core #29: 0.05%
+CPU Core #30: 0.30%
+CPU Core #31: 2.38%
+CPU Core #32: 2.04%
+CPU Core #33: 3.00%
+CPU Core #34: 0.22%
+CPU Core #35: 1.16%
+CPU Core #36: 0.01%
+CPU Core #37: 0.08%
+CPU Core #38: 0.32%
+CPU Core #39: 0.11%
+CPU Core #40: 0.02%
+CPU Core #41: 0.02%
+CPU Core #42: 0.04%
+CPU Core #43: 0.11%
+CPU Core #44: 0.05%
+CPU Core #47: 0.01%
+
+Memory requested: 20480 MB
+Memory used:      2443 MB
+Swap used:        0 MB
+
+Number times max memory limit reached or attempted to exceed: 0
+
+Max Memory Used / Memory Requested: 11.9310%
+

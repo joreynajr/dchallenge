@@ -1,0 +1,100 @@
+#########################################################################################
+# R Setup ###############################################################################
+#########################################################################################
+
+We will be using R version 3.6.1 which is already pre-installed on our server.
+I have prepared a script in this directory called Activate_R-3.6.1.sh. By
+using the command "source Activate_R-3.6.1.sh" you can make sure to always use
+the correct R. 
+
+Next, you have to install a few R packages required by the colocalization
+analysis. You will find another script called Rdeps.R which attempts to install
+these packages. Please use the follow code to do so:
+
+# add R-3.6.1 to your path
+source Activate_R-3.6.1.sh
+
+# run the package installation script
+Rscript Rdeps.sh
+
+Now you are set with the correct R + packages.
+
+#########################################################################################
+# Colocalization setup ##################################################################
+#########################################################################################
+
+The colocalization code has all been setup very neatly but we have to change a
+few paths to ensure the analyses are being saved to your Results folder. For
+Fix 1-4 (check below) you just need to change the current absolute path to a new
+absolute path that reflects where you copied over Sourya's code. For Fix5 I am
+asking you to just comment out this line so qsub is not run automatically, we
+will do the qsub part together. 
+
+Fix 1: update absolute path
+CodeExec='/mnt/BioAdHoc/Groups/vd-ay/jreyna/projects/dchallenge/results/main/2021_Nikhil_eQTL/Code/Colocalization/Colocalization_Analysis_GWAS_Script.R'
+
+Fix2: update absolute path
+EQTLBASEDIR='/mnt/BioAdHoc/Groups/vd-ay/jreyna/projects/dchallenge/results/main/2021_Nikhil_eQTL/Data/eqtl_sqtl_summ_stats'
+
+Fix3: update absolute path
+GWASDataBaseDir="/mnt/BioAdHoc/Groups/vd-ay/jreyna/projects/dchallenge/results/main/2021_Nikhil_eQTL/Data/T1D_GWAS"
+
+Fix4: update absolute path
+BASEOUTDIR='/mnt/BioAdHoc/Groups/vd-ay/jreyna/projects/dchallenge/results/main/2021_Nikhil_eQTL/Results/Colocalization'
+
+Fix5: comment out line
+		#qsub ${scriptfile}
+
+#########################################################################################
+# Usage: Tutorial #######################################################################
+#########################################################################################
+
+You are now ready to try out an example run. Make sure you are using the
+correct R by using: 
+source Activate_R-3.6.1.sh
+
+Then run the colocalization analysis by simply running: 
+bash colocalization_Analysis_GWAS_Script.sh
+
+This command will generate another script with the prefix: "temp_script_Coloc"
+followed by information about the GWAS and eQTL data. You can then run this
+script using qsub directory or in qsub interactive mode. Once this last script
+has been run you'll have your colocalization analysis.
+
+#########################################################################################
+# Usage: Full Runs ######################################################################
+#########################################################################################
+
+I am considering a full run the addition of new GWAS and eQTL analyses.
+
+To add new GWAS datasets simply download a new dataset to:
+<project_dir>/2021_Nikhil_eQTL/Data/T1D_GWAS/<new_dataset>/
+
+To add new eQTL analyses simply download a dataset to: 
+2021_Nikhil_eQTL/Data/eqtl_sqtl_summ_stats/<new_dataset>
+
+#########################################################################################
+# Other #################################################################################
+#########################################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
