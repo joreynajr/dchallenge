@@ -1,4 +1,10 @@
 ----------------------------------------------------------------------------------------------
+## Information
+----------------------------------------------------------------------------------------------
+We are going to combine several dataset and these sets of scripts will connect
+all data types.
+
+----------------------------------------------------------------------------------------------
 ## Scripts to annotate colocalized snps
 ----------------------------------------------------------------------------------------------
 Annotate_Coloc_SNPs_with_Nearby_Genes_Loops.ipynb - developmental notebook for
