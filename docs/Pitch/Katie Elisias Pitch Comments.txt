@@ -1,0 +1,27 @@
+ - Solid professional 
+- Katie Ellisas (T1D Fund)
+- What enambles to do 
+- future clinical devs 
+- genetic modulators 
+- emphasize so what does this technique add to field 
+- tighten up 
+- bucket the steps into steps 
+- what did you learn 
+- Written sumbission is already present so presentation can be diffreent 
+- Implications are more important - Biomarker strategy 
+- Show where people were wrong about some gene 
+- Obesity
+- Value of this framework, it'll be the right gene to study
+- To study these disease we need 
+	- GwAS gives us snp but NOT cell types 
+	- eQTL finds targets but they might be wrong, should find 
+	- CHIPseq - should find the correct target (fixes 
+
+- Slide 1 Right cell type, gene expression
+- Slide 2 GWAS (right variant but conditions are not known)
+- Slide 
+
+
+- Money is important (experiments are important) - Need to do more experiments 
+- How do you find out what a gene does? Assay in different conditions. 
+
