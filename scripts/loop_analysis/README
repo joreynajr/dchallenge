@@ -1,0 +1,32 @@
+----------------------------------------------------------------------------------------------
+## Scripts to annotate colocalized snps
+----------------------------------------------------------------------------------------------
+Annotate_Coloc_SNPs_with_Nearby_Genes_Loops.ipynb - developmental notebook for
+the annotation.
+
+Annotate_Coloc_SNPs_with_Nearby_Genes_Loops.py - script based version of the
+jupyter notebook code.
+
+Annotate_Coloc_SNPs_with_Nearby_Genes_Loops.BashGO.py.ipynb - runs each
+individual GWAS-eQTL pair. 
+
+Combine_Loops_From_Coloc_Perspective.ipynb - combines the annotations into a
+master table. 
+
+To run these scripts first edit the code in Annotate_Coloc_SNPs_with_Nearby_Genes_Loops.ipynb
+then update Annotate_Coloc_SNPs_with_Nearby_Genes_Loops.py and run this script
+from within Annotate_Coloc_SNPs_with_Nearby_Genes_Loops.BashGO.py.ipynb.
+Finally combine everything with Combine_Loops_From_Coloc_Perspective.ipynb.
+
+----------------------------------------------------------------------------------------------
+## All other scripts 
+----------------------------------------------------------------------------------------------
+archive - Directory with old scripts that are kept temporarily
+
+Create_GENCODE_v19_GRCh37_Annotation_Bed.ipynb - Generate the GENCODe
+annotation bed 
+
+Summarize_Coloc_SNPs_per_Study.ipynb - Summary of colocalized snps per study.
+
+Summarize_the_GWAS_eQTL_Coloc_datasets.ipynb - Summyar of GWAS, eQTL and
+colocalized SNPS. 
