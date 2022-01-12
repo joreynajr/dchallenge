@@ -21,6 +21,7 @@ os.makedirs(outdir, exist_ok=True)
 
 # load the data
 gwas = pd.read_table(gwas_fn)
+gwas.columns = ['CHR', 'POS', 'BETA', 'SE', 'P', 'N']
 gwas['P'] = gwas['P'].astype(float)
 
 # removing zero value entries 
