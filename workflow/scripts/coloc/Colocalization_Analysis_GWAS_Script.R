@@ -9,35 +9,6 @@ library(coloc)
 library(snpStats)
 library(ggplot2)
 library(ggplotify)
-library(argparse)
-
-#########################################################################################
-# Setting up command line interface
-#########################################################################################
-parser <- ArgumentParser(description="Commandline tool for colocalization analyses.")
-parser$add_argument('--eqtl-chr', type='integer', default=1)
-parser$add_argument('--eqtl-pos', type='integer', default=2)
-parser$add_argument('--eqtl-geneName', type='integer', default=3)
-parser$add_argument('--eqtl-dist', type='integer', default=4)
-parser$add_argument('--eqtl-slope', type='integer', default=5)
-parser$add_argument('--eqtl-pvalue', type='integer', default=6)
-parser$add_argument('--eqtl-FDR', type='integer', default=NULL)
-parser$add_argument('--eqtl-header', type='logical', default=FALSE)
-parser$add_argument('gwas', type='character')
-parser$add_argument('eqtl', type='character')
-parser$add_argument('outdir', type='character')
-params <- parser$parse_args()
-
-# compiling the eqtl columns
-if (is.null(params$eqtl_fdr)){
-    eqtl_cols = c(params$eqtl_chr, params$eqtl_pos, params$eqtl_geneName,
-                  params$eqtl_dist, params$eqtl_slope, params$eqtl_pvalue)
-} else{
-    eqtl_cols = c(params$eqtl_chr, params$eqtl_pos, params$eqtl_geneName,
-                  params$eqtl_dist, params$eqtl_slope, params$eqtl_pvalue, params$eqtl_fdr)
-}
-
-print(eqtl_cols)
 
 options(scipen = 10)
 options(datatable.fread.datatable=FALSE) 
@@ -54,12 +25,6 @@ MHC_chr6_UB <- 33448354
 ##===========
 ## 500 Kb on both side of a significant GWAS SNP
 GWAS_WINDOW <- 500000
-
-##===========
-# parsing important data and output paths 
-inp_GWAS_file <- params$gwas
-BaseOutDir <- params$outdir
-RefEQTLFile <- params$eqtl
 
 #=======================
 # this function estimates standard error of SNP using beta, MAF values
@@ -101,6 +66,12 @@ estimate_SE <- function(inpdf, beta_column, MAF_column, size_column) {
 # *************************************************************
 # ******** input parameters ***********
 # *************************************************************
+args <- commandArgs(TRUE)
+
+inp_GWAS_file <- args[1]
+BaseOutDir <- args[2]
+RefEQTLFile <- args[3]
+
 p12_val <- 0.00001 	# 1e-5 
 
 system(paste("mkdir -p", BaseOutDir))
@@ -112,9 +83,7 @@ ColocSNPInfoFile <- paste0(BaseOutDir, '/FINAL_Summary_Coloc_Gene_SNP_Pairs.bed'
 
 ##==== output summary file
 textfile <- paste0(BaseOutDir, '/Out_Summary.log')
-outtext <- paste0("\n *** Parameters for colocalization (GWAS) analysis **** \n input GWAS summary statistics file : ",
-                    inp_GWAS_file, "\n reference EQTL file : ",
-                    RefEQTLFile, "\n BaseOutDir : ", BaseOutDir)
+outtext <- paste0("\n *** Parameters for colocalization (GWAS) analysis **** \n input GWAS summary statistics file : ", inp_GWAS_file, "\n reference EQTL file : ", RefEQTLFile, "\n BaseOutDir : ", BaseOutDir)
 cat(outtext, file=textfile, append=FALSE, sep="\n")
 
 ##==== read input GWAS file
@@ -139,38 +108,22 @@ for (chridx in 1:length(GWASChrList)) {
 	outtext <- paste0("\n\n\n *********** \n ==>> processing GWAS chromosome : ", currchr, "\n number of GWAS SNP entries for this chromosome : ", nrow(GWAS_Data_currchr), "\n ****************")
 	cat(outtext, file=textfile, append=TRUE, sep="\n")
 
-    # setting the file name for each dumped chromosome
-	temp_eQTL_file <- paste0(BaseOutDir, '/dumped_eQTL_', currchr, '.txt')
-
 	##=====================
 	## process the eQTL data for this chromosome
 	##=====================
-	print("## process the eQTL data for this chromosome")
-	## parsing the eQTL data according to commandline specified columns 
-	Ref_eQTL_Data <- data.table::fread(RefEQTLFile, select=eqtl_cols, header=params$eqtl_header)
-
-	#print("Printing the Ref_eQTL_Data.")
-	#print(head(Ref_eQTL_Data))
-
-	#dump_Ref_eQTL_Data <- Ref_eQTL_Data [, eqtl_cols]
-
-    ## adding FDR data when available
-    #print("# adding FDR data when available")
-	#dump_Ref_eQTL_Data['FDR'] = NA
-    #if (!is.null(params$eqtl_fdr)){
-    #    dump_Ref_eQTL_Data['FDR'] = Ref_eQTL_Data[, eqtl_fdr] 
-    #}
-    if (is.null(params$eqtl_fdr)){
-        dump_Ref_eQTL_Data['FDR'] = NA
-    }
-
-	#print("Printing the dump_Ref_eQTL_Data.")
-	#print(head(dump_Ref_eQTL_Data))
-
-    # adding columns names
-    print("# adding columns names")
+	## original file fields: pid	nvar	shape1	shape2	dummy	sid	dist	npval	slope	ppval	bpval	qval
+	## first extract the following fields: sid  pid  dist  slope  bpval  qval
+	## sid is of the format: chrnum:pos
+	## then extract the chromosome and SNP position information
+	## and then only find the eQTLs for the current chromosome
+	temp_eQTL_file <- paste0(BaseOutDir, '/dumped_eQTL_', currchr, '.txt')
+	if (tools::file_ext(RefEQTLFile) == "gz") {
+		system(paste0("zcat ", RefEQTLFile, " | awk -F\'[\t]\' \'{if (NR>1) {print $6\"\t\"$1\"\t\"$7\"\t\"$9\"\t\"$11\"\t\"$12}}\' - | awk -F\'[:|\\t]\' \'{print \"chr\"$1\"\t\"$2\"\t\"$3\"\t\"$4\"\t\"$5\"\t\"$6\"\t\"$7}\' - | awk \'($1==\"", currchr, "\")\' - > ", temp_eQTL_file))
+	} else {
+		system(paste0("cat ", RefEQTLFile, " | awk -F\'[\t]\' \'{if (NR>1) {print $6\"\t\"$1\"\t\"$7\"\t\"$9\"\t\"$11\"\t\"$12}}\' - | awk -F\'[:|\\t]\' \'{print \"chr\"$1\"\t\"$2\"\t\"$3\"\t\"$4\"\t\"$5\"\t\"$6\"\t\"$7}\' - | awk \'($1==\"", currchr, "\")\' - > ", temp_eQTL_file))
+	}
+	dump_Ref_eQTL_Data <- data.table::fread(temp_eQTL_file, header=F)
 	colnames(dump_Ref_eQTL_Data) <- c('chr', 'pos', 'geneName', 'dist', 'slope', 'pvalue', 'FDR')
-    
 	outtext <- paste0("\n ******** Number of reference EQTLs for the current chromosome: ", nrow(dump_Ref_eQTL_Data))
 	cat(outtext, file=textfile, append=TRUE, sep="\n")
 	if (nrow(dump_Ref_eQTL_Data) == 0) {
@@ -182,8 +135,6 @@ for (chridx in 1:length(GWASChrList)) {
 	dump_Ref_eQTL_Data <- data.table::fread(temp_eQTL_file, header=T)		
 
 	##======== complete SNP information for the current chromosome
-	print("##======== complete SNP information for the current chromosome")
-
 	SNPInfoFile <- paste0('/mnt/BioAdHoc/Groups/vd-vijay/sourya/Projects/2018_HiChIP_FiveImmuneCell_Vivek/Data/Genotype_Ref_May_2020/SNPInfo/snpinfo_', currchr, '.txt')
 	SNPInfoData <- data.table::fread(SNPInfoFile, header=T, sep=" ")	# employ space separator
 	colnames(SNPInfoData) <- c('chr', 'pos', 'variant_id', 'rs_id', 'ref', 'alt', 'AC', 'AF', 'AN')
@@ -192,25 +143,21 @@ for (chridx in 1:length(GWASChrList)) {
 	cat(outtext, file=textfile, append=TRUE, sep="\n")	
 
 	##=========== merged eQTL with the reference SNP information
-	print("##=========== merged eQTL with the reference SNP information")
 	merge_EQTL_SNPInfo_DF <- dplyr::inner_join(dump_Ref_eQTL_Data, SNPInfoData)
 	cat(sprintf("\n ===>> after creating merge_EQTL_SNPInfo_DF "))
 	outtext <- paste0("\n ==>>> number of entries in merge_EQTL_SNPInfo_DF : ", nrow(merge_EQTL_SNPInfo_DF))
 	cat(outtext, file=textfile, append=TRUE, sep="\n")
 
 	##==== extract fields for colocalization
-	print("##==== extract fields for colocalization")
 	Coloc_CurrChr_DF_SNP <- merge_EQTL_SNPInfo_DF[, c("rs_id", "variant_id", "geneName", "chr", "pos", "dist", "pvalue", "FDR", "slope", "ref", "alt", "AC", "AF", "AN")]
 
 	##====== estimate standard error using three arguments: beta (column 9), MAF (column 13), size (column 14)
-	print("##====== estimate standard error using three arguments: beta (column 9), MAF (column 13), size (column 14)")
 	CN <- colnames(Coloc_CurrChr_DF_SNP)
 	SE_DF <- estimate_SE(Coloc_CurrChr_DF_SNP, 9, 13, 14)
 	Coloc_CurrChr_DF_SNP <- cbind.data.frame(Coloc_CurrChr_DF_SNP, SE_DF$SE)
 	colnames(Coloc_CurrChr_DF_SNP) <- c(CN, "slope_se")
 
 	##===== *** IMPORTANT: excluding SNPs belonging to chr6 MHC locus
-	print("##===== *** IMPORTANT: excluding SNPs belonging to chr6 MHC locus")
 	mhc_idx <- which((Coloc_CurrChr_DF_SNP[,4] == "chr6") & (Coloc_CurrChr_DF_SNP[,5] >= MHC_chr6_LB) & (Coloc_CurrChr_DF_SNP[,5] <= MHC_chr6_UB))
 	if (length(mhc_idx) > 0) {
 		Coloc_CurrChr_DF_SNP <- Coloc_CurrChr_DF_SNP[-mhc_idx, ]
@@ -224,7 +171,6 @@ for (chridx in 1:length(GWASChrList)) {
 	##=====================
 	## define the set of GWAS loci for this chromosome
 	##=====================
-	print("## define the set of GWAS loci for this chromosome")
 
 	## first, sort the GWAS entries by p-values	
 	gwasdata <- GWAS_Data_currchr[order(GWAS_Data_currchr$pval_nominal), ]
@@ -415,7 +361,6 @@ for (chridx in 1:length(GWASChrList)) {
 ##==================
 ## print the summary statistics
 ##==================
-print("## print the summary statistics")
 
 # dump the final summary file
 write.table(SNPSummaryDF, ColocSNPInfoFile, row.names=F, col.names=T, sep="\t", quote=F, append=F)		

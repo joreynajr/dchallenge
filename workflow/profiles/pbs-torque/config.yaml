@@ -1,0 +1,12 @@
+jobs: 15
+latency-wait: 120
+printshellcmds: true
+cluster: "qsub.py"
+reason: true
+keep-going: true
+nolock: true
+report-stylesheet: "custom-stylesheet.css"
+show-failed-logs: true
+summary: false
+detailed-summary: false
+rerun-incomplete: true

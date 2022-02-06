@@ -1,0 +1,10 @@
+jobs: 1
+latency-wait: 120
+printshellcmds: true
+reason: true
+keep-going: false
+nolock: true
+report-stylesheet: "custom-stylesheet.css"
+show-failed-logs: true
+summary: false
+detailed-summary: false

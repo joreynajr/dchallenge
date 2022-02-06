@@ -1,0 +1,43 @@
+compute-2-2.hpc.lji.org
+This is a new update to coloc.
+Loading required package: survival
+Loading required package: Matrix
+Error in .stop(output, "parse error:") : parse error:
+usage: /mnt/BioAdHoc/Groups/vd-ay/jreyna/projects/dchallenge/results/main/2021_Nikhil_eQTL/Code/Colocalization/Colocalization_Analysis_GWAS_Script_Generalized.R
+       [-h] [--eqtl-chr EQTL_CHR] [--eqtl-pos EQTL_POS]
+       [--eqtl-geneName EQTL_GENENAME] [--eqtl-dist EQTL_DIST]
+       [--eqtl-slope EQTL_SLOPE] [--eqtl-pvalue EQTL_PVALUE]
+       [--eqtl-FDR EQTL_FDR] [--eqtl-header EQTL_HEADER]
+/mnt/BioAdHoc/Groups/vd-ay/jreyna/projects/dchallenge/results/main/2021_Nikhil_eQTL/Code/Colocalization/Colocalization_Analysis_GWAS_Script_Generalized.R: error: unrecognized arguments: /mnt/BioAdHoc/Groups/vd-ay/jreyna/projects/dchallenge/results/main/2021_Nikhil_eQTL/Data/T1D_GWAS/T1D_34012112_Gaulton/GWAS_input_colocalization_pval_lt_5eMinus8.txt /mnt/BioAdHoc/Groups/vd-ay/jreyna/projects/dchallenge/results/main/2021_Nikhil_eQTL/Results/Colocalization_Update/T1D_34012112_Gaulton/BLUEPRINT_eQTL_Monocyte /mnt/BioAdHoc/Groups/vd-ay/jreyna/projects/dchallenge/results/main/2
+Calls: <Anonymous> -> parse_args_output -> .stop
+Execution halted
+
+         ----- Job Summary Statistics -----
+                    Queue: default                  
+                   Job ID: 4719140.herman.hpc.lji.org
+                 Job Name: temp_script_Coloc_T1D_34012112_Gaulton_BLUEPRINT_eQTL_Monocyte.sh
+                Node name: compute-2-2.hpc.lji.org  
+Job duration on this node: 00:00:20                 
+          Node Multiplier: .879                     
+      Normalized walltime: 00:00:18                 
+
+Job Requested resources:
+    nodes=1:ppn=1,mem=20gb,walltime=04:00:00,neednodes=1:ppn=1
+Used resources (as reported by Torque):
+    cput=00:00:03,vmem=505896kb,walltime=00:00:18,mem=112768kb,energy_used=0
+
+
+Additional Statistics (cgroup stats):
+
+CPU core numbers on node assigned for usage: 20
+CPU work distribution:
+CPU Core #20: 100.00%
+
+Memory requested: 20480 MB
+Memory used:      269 MB
+Swap used:        0 MB
+
+Number times max memory limit reached or attempted to exceed: 0
+
+Max Memory Used / Memory Requested: 1.3177%
+
