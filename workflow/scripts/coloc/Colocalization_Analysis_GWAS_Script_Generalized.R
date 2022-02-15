@@ -23,6 +23,7 @@ parser$add_argument('--eqtl-slope', type='integer', default=5)
 parser$add_argument('--eqtl-pvalue', type='integer', default=6)
 parser$add_argument('--eqtl-FDR', type='integer', default=NULL)
 parser$add_argument('--eqtl-header', type='logical', default=FALSE)
+parser$add_argument('snp_info_dir', metavar='snp-info-dir', type='character')
 parser$add_argument('gwas', type='character')
 parser$add_argument('eqtl', type='character')
 parser$add_argument('outdir', type='character')
@@ -36,8 +37,6 @@ if (is.null(params$eqtl_fdr)){
     eqtl_cols = c(params$eqtl_chr, params$eqtl_pos, params$eqtl_geneName,
                   params$eqtl_dist, params$eqtl_slope, params$eqtl_pvalue, params$eqtl_fdr)
 }
-
-print(eqtl_cols)
 
 options(scipen = 10)
 options(datatable.fread.datatable=FALSE) 
@@ -133,6 +132,7 @@ cat(outtext, file=textfile, append=TRUE, sep="\n")
 
 GWASChrList <- as.vector(unique(GWAS_Data[,1]))
 for (chridx in 1:length(GWASChrList)) {
+
 	currchr <- GWASChrList[chridx]	
 	GWAS_Data_currchr <- GWAS_Data[which(GWAS_Data[,1] == currchr), ]
 	
@@ -152,7 +152,7 @@ for (chridx in 1:length(GWASChrList)) {
 	#print("Printing the Ref_eQTL_Data.")
 	#print(head(Ref_eQTL_Data))
 
-	#dump_Ref_eQTL_Data <- Ref_eQTL_Data [, eqtl_cols]
+	dump_Ref_eQTL_Data <- Ref_eQTL_Data [, eqtl_cols]
 
     ## adding FDR data when available
     #print("# adding FDR data when available")
@@ -184,7 +184,9 @@ for (chridx in 1:length(GWASChrList)) {
 	##======== complete SNP information for the current chromosome
 	print("##======== complete SNP information for the current chromosome")
 
-	SNPInfoFile <- paste0('/mnt/BioAdHoc/Groups/vd-vijay/sourya/Projects/2018_HiChIP_FiveImmuneCell_Vivek/Data/Genotype_Ref_May_2020/SNPInfo/snpinfo_', currchr, '.txt')
+    # Using an input params to switch between SNP info files
+	#SNPInfoFile <- paste0('/mnt/BioAdHoc/Groups/vd-vijay/sourya/Projects/2018_HiChIP_FiveImmuneCell_Vivek/Data/Genotype_Ref_May_2020/SNPInfo/snpinfo_', currchr, '.txt')
+	SNPInfoFile <- paste0(params$snp_info_dir, '/snpinfo_', currchr, '.txt')
 	SNPInfoData <- data.table::fread(SNPInfoFile, header=T, sep=" ")	# employ space separator
 	colnames(SNPInfoData) <- c('chr', 'pos', 'variant_id', 'rs_id', 'ref', 'alt', 'AC', 'AF', 'AN')
 	cat(sprintf("\n ===>> after reading SNPInfoData "))
