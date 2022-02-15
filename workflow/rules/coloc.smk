@@ -2,6 +2,58 @@
 # Rules to analyze ALL eQTLs (no FDR filtering)
 #########################################################################################
 
+rule liftover_snp_info:
+    input:
+        txt = 'results/refs/coloc_snps_meta/grch37/SNPInfo/snpinfo_chr{chr_num}.txt',
+        chain = rules.download_chain_file_hg19tohg38.output
+    output:
+        txt = 'results/refs/coloc_snps_meta/grch38/SNPInfo/snpinfo_chr{chr_num}.txt'
+    log: 
+        'results/refs/coloc_snps_meta/grch38/SNPInfo/logs/snpinfo_chr{chr_num}.log'
+    shell:
+        r"""
+            # prepare the input liftover file
+            echo "# prepare the input liftover file" > {log}
+            liftover_input="{input.txt}.liftover.input.bed"
+            cat {input.txt} | \
+              sed '1d' | \
+              awk 'BEGIN{{OFS="\t"}}; {{print $1,($2 - 1),$2,$3,$4,$5,$6,$7,$8,$9}}' > \
+              $liftover_input 2>> {log}
+
+            # perform the liftover
+            echo "# perform the liftover_snp_info" >> {log}
+            lifted="{input.txt}.lifted.bed"
+            unmapped="{input.txt}.unmapped.txt"
+            {config[liftover]} -bedPlus=3 \
+                             -tab $liftover_input \
+                             {input.chain} \
+                             $lifted \
+                             $unmapped 2>> {log}
+
+            # convert back to the regular format
+            echo "# convert back to the regular format" >> {log}
+            interm="{input.txt}.interm.txt"
+            cut -f 2 --complement --output-delimiter " " $lifted > $interm 2>> {log}
+
+            # fix the third column and complete the preprocessing
+            echo "# fix the third column and complete the preprocessing" >> {log}
+            head -n 1 {input.txt} > {output.txt}
+            cat $interm | \
+                awk '{{chrom=gensub(/chr/, "", 1, $1); print $1, $2, (chrom":"$2":"$5":"$6), $4, $5, $6, $7, $8, $9}}' >> \
+                {output.txt} 2>> {log}
+    
+            # remove remaining files
+            echo "# remove remaining files" >> {log}
+            echo $liftover_input $lifted $unmapped
+            #rm $liftover_input $lifted $unmapped > {log}
+
+        """
+
+
+
+
+
+
 # This file doesn not contain a chr and position field, rather it has a 
 # sid filed form which you can generated these two.
 rule calculate_dist_col: # (Status: working)
@@ -92,6 +144,7 @@ rule parse_eqtl_catalog_with_dist: # (Status: working)
 
 rule run_colocalization_eqtl_catalog: #(Status: working)
     input:
+        snp_info_dir = 'results/refs/coloc_snps_meta/grch38/SNPInfo/',
         gwas = 'results/main/coloc/Data/T1D_GWAS/{gwas_source}/GRCh38/GWAS_input_colocalization_pval_lt_5eMinus8.GRCh38.txt',
         eqtl = rules.parse_eqtl_catalog_with_dist.output
     output:
@@ -132,6 +185,7 @@ rule run_colocalization_eqtl_catalog: #(Status: working)
                                 --eqtl-dist {params.dist} \
                                 --eqtl-slope {params.slope} \
                                 --eqtl-pvalue {params.pvalue} \
+                                {input.snp_info_dir} \
                                 {input.gwas} \
                                 {input.eqtl} \
                                 {output.outdir} >> {log} 2>&1
@@ -197,7 +251,7 @@ rule add_missing_cols: #(Status: working)
     output:
         'results/main/eqtl/{eqtl_source}/ge/{eqtl_source}_ge_{ge_source}.all.complete_fields.tsv.gz'
     log: 
-        'results/main/eqtl/logs/add_dist_col.{eqtl_source}.{ge_source}.log'
+        'results/main/eqtl/logs/add_missing_cols.{eqtl_source}.{ge_source}.log'
     resources:
         mem_mb = 32000,
         nodes = 1,

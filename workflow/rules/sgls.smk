@@ -32,13 +32,12 @@ rule rename_loop_dirs: #(Status: running)
             done
         '''
 
-        
 
 rule filter_eqtls_using_colocs: #(Status: developing)
     input:
         eqtl = rules.add_missing_cols.output,
         coloc_dir = rules.run_colocalization_eqtl_catalog.output,
-        coloc = 'results/main/coloc/Results/Colocalization_SMKN/T1D_34012112_Gaulton/{eqtl_source}/{ge_source}/FINAL_Summary_Coloc_Gene_SNP_Pairs.bed'
+        coloc = 'results/main/coloc/Results/Colocalization_SMKN/{gwas_source}/{eqtl_source}/{ge_source}/FINAL_Summary_Coloc_Gene_SNP_Pairs.bed'
     output:
         outfn = 'results/main/sgls/{gwas_source}/{eqtl_source}/{ge_source}/eqtls.coloc_filtered.tsv.gz'
     log: 
@@ -52,27 +51,117 @@ rule filter_eqtls_using_colocs: #(Status: developing)
         '''
 
 
+rule liftover_loops_to_GRCh38: #(Status: developing)
+    input:
+        loops = 'results/main/h3k27ac_hichip/{loop_source}/FitHiChIP_S/FitHiChIP.interactions_FitHiC_Q0.01.bed',
+        chain = rules.download_chain_file_hg19tohg38.output
+    output:
+        loops = 'results/main/h3k27ac_hichip/{loop_source}/FitHiChIP_S/FitHiChIP.interactions_FitHiC_Q0.01.grch38.bed'
+    log: 
+        'results/main/sgls/logs/liftover_loops_to_GRCh38.{loop_source}.log'
+    resources:
+        mem_mb = 24000,
+        nodes = 1,
+        ppn = 1,
+    shell:
+        r'''
+
+            # lift the left anchor
+            echo "# lift the left anchor" > {log}
+            left="{input.loops}.left"
+            awk 'BEGIN{{OFS="	"}} {{if(NR != 1) {{print $1, $2, $3, NR}}}}' {input.loops} > $left 2> {log}
+            left_lifted="{input.loops}.left.lifted"
+            left_unmapped="{input.loops}.left.unmapped"
+            {config[liftover]} -bedPlus=3 -tab $left {input.chain} $left_lifted $left_unmapped 2> {log}
+
+            # sort the left data
+            echo "# sort the left data" > {log}
+            left_sorted="{input.loops}.left.lifted.sorted"
+            sort -k 4 $left_lifted > $left_sorted 2> {log}
+
+            # lift the right anchor
+            echo "# lift the right anchor" > {log}
+            right="{input.loops}.right"
+            sed '1d' {input.loops} | cut -f 4- | awk 'BEGIN{{OFS="	"}} {{print $0, NR}}' > $right 2> {log}
+            right_lifted="{input.loops}.right.lifted"
+            right_unmapped="{input.loops}.right.unmapped"
+            {config[liftover]} -bedPlus=3 -tab $right {input.chain} $right_lifted $right_unmapped 2> {log}
+
+            # sort the right data
+            echo "# sort the right data" > {log}
+            right_id=$(head -n 1 $right_lifted | wc -w)
+            right_sorted="{input.loops}.right.lifted.sorted"
+            sort -k $right_id $right_lifted > $right_sorted 2> {log}
+
+            # join the two files on the serial ID
+            head -n 1 {input.loops} > {output} 2> {log} # add header fist
+            join -1 4 -2 $right_id -t "	" $left_sorted $right_sorted | cut -f 2- >> {output} 2> {log}
+
+            # remove temps
+            rm $left_lifted $left_unmapped $left_sorted 2> {log}
+            rm $right_lifted $right_unmapped $right_sorted 2> {log}
+
+        '''
+
+
 rule annotate_colocs: #(Status: developing)
     input:
         eqtl = rules.filter_eqtls_using_colocs.output,
         coloc_dir = rules.run_colocalization_eqtl_catalog.output,
-        coloc = 'results/main/coloc/Results/Colocalization_SMKN/T1D_34012112_Gaulton/{eqtl_source}/{ge_source}/FINAL_Summary_Coloc_Gene_SNP_Pairs.bed',
-        loops = 'results/main/h3k27ac_hichip/{ge_source}/FitHiChIP_S/FitHiChIP.interactions_FitHiC_Q0.01.bed.gz',
+        coloc = 'results/main/coloc/Results/Colocalization_SMKN/{gwas_source}/{eqtl_source}/{ge_source}/FINAL_Summary_Coloc_Gene_SNP_Pairs.bed',
+        loops = rules.liftover_loops_to_GRCh38.output.loops,
         genome_sizes = 'results/refs/hg38/hg38.chrom.sizes',
         gencode = 'results/refs/gencode/v30/gencode.v30.annotation.bed'
     output:
         outdir = directory('results/main/sgls/{gwas_source}/{eqtl_source}/{ge_source}/{loop_source}/')
     log: 
         'results/main/sgls/logs/annotate_colocs.{gwas_source}.{eqtl_source}.{ge_source}.{loop_source}.log'
+    params:
+        loop_slop = 25000
+    resources:
+        mem_mb = 24000,
+        nodes = 1,
+        ppn = 1,
     shell:
         r'''
-            mkdir -p {output}
-            python workflow/scripts/sgls/Find_SGLs.eQTL_Catalogue_Format.py \
+            mkdir -p {output} >> {log} 2>&1
+            {config[hichip_db_py]} workflow/scripts/sgls/Find_SGLs.eQTL_Catalogue_Format.py \
                                         {input.eqtl} \
                                         {input.coloc} \
                                         {input.loops} \
                                         {wildcards.ge_source} \
                                         {input.genome_sizes} \
                                         {input.gencode} \
-                                        {output}
+                                        {params.loop_slop} \
+                                        {output} >> {log} 2>&1
         '''
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+rule combine_intersections: #(Status: developing)
+    output:
+        'results/main/sgls/master/super_master.snp_gene_loop.analysis.tsv'
+    log: 
+        'results/main/sgls/logs/combine_intersections.log'
+    notebook:
+        '../notebooks/reports/Combine_Master_Tables_New_Pipeline2.py.ipynb'
