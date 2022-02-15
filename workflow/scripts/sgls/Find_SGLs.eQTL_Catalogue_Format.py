@@ -42,7 +42,8 @@ loop_fn = sys.argv[3]
 celltype = sys.argv[4]
 gs_fn = sys.argv[5]
 genes_fn = sys.argv[6]
-outdir = sys.argv[7]
+loop_slop = sys.argv[7]
+outdir = sys.argv[8]
 
 #########################################################################################
 # Load the colocalization data
@@ -98,7 +99,7 @@ genes_pbt = pbt.BedTool.from_dataframe(genes_df).sort()
 print('There are {} genes in this GTF-derived file.'.format(genes_df.shape[0]))
 
 #########################################################################################
-# Find all genes +/- 500kb
+# Find all genes +/- 500kb of a colocalized SNP
 #########################################################################################
 print("# Find all genes +/- 500kb")
 
@@ -136,19 +137,13 @@ closest_gene.columns = bedpe_6cols + ['rs_id', 'gname', 'gid', 'dist']
 closest_gene['sid'] = closest_gene['chrA'].str.replace('chr', '') + ':' + closest_gene['endA'].astype(str)
 closest_gene.set_index(['sid', 'gname'], inplace=True)
 
-
 #########################################################################################
-# Get the loops
+# Load the H3K27ac HiChIP loops
 #########################################################################################
 print('# Get the loops')
 
 # load the loop data
 loops = pd.read_table(loop_fn)
-print('loop_fn', loop_fn)
-
-
-print('loops loaded')
-
 tmp_loops = loops[['chr1', 's1', 'e1', 'chr2', 's2', 'e2']]
 tmp_loops.rename(columns={'p': 'score'}, inplace=True)
 tmp_loops.loc[:, 'name'] = '.'
@@ -156,41 +151,28 @@ tmp_loops.loc[:, 'score'] = loops['p']
 tmp_loops.loc[:, 'strand1'] = '.'
 tmp_loops.loc[:, 'strand2'] = '.'
 loops = pbt.BedTool.from_dataframe(tmp_loops)
-print('FitHiChIP found {} significant loops.'.format(tmp_loops.shape[0]))
 print(tmp_loops.head())
 
-
-
-
-# ## Load Promoter Capture HiC Data
-print('# ## Load Promoter Capture HiC Data')
+#########################################################################################
+# Find genes overlapping loops
+#########################################################################################
 
 # re-arranging to fit bedpe format
 fivekb_gloops = fivekb_genes.copy()
 
-print('fivekb_gloops')
-print(fivekb_gloops.head())
-
 # loading into pbt
 fivekb_gloops = pbt.BedTool.from_dataframe(fivekb_gloops)
-fivekb_gloops = fivekb_gloops.pair_to_pair(loops, type='both', slop=7500, **{'is':True})
+fivekb_gloops = fivekb_gloops.pair_to_pair(loops, type='both', slop=loop_slop, **{'is':True})
 fivekb_gloops = fivekb_gloops.to_dataframe(disable_auto_names=True, header=None)
 
-
-print('fivekb_gloops')
-print(fivekb_gloops.head())
-
-
 if len(fivekb_gloops) > 0:
-    fivekb_gloops_set = fivekb_gloops.iloc[:, [13,11]]
+    fivekb_gloops_set = fivekb_gloops.iloc[:, [13,12]]
     fivekb_gloops_uniq = set([tuple(x) for x in fivekb_gloops_set.values.tolist()])
 else:
     print('WARNING: Found no overlap between the genes and loops.')
     fivekb_gloops_uniq = set()
 
-
 print('There are {} SNP-Gene pairs with a loop.'.format(len(fivekb_gloops_uniq)))
-
 
 #########################################################################################
 # Construct master table
@@ -205,8 +187,6 @@ print('Master is starting with {} snp-gene pairs.'.format(master.shape[0]))
 
 # #### Add eqtl results 
 print("# #### Add eqtl results")
-
-print(master.head(5))
 
 # get eQTL's
 eqtls = pd.read_table(eqtl_fn, header=0)
@@ -223,7 +203,7 @@ print('There are {} eQTLs.'.format(eqtls.shape[0]))
 master = master.merge(eqtls, left_on=['sid', 'gname'], right_on=['sid', 'molecular_trait_id'], how='outer')
 
 # add column to filter on eqtl snp status
-#master['is_eqtl_pair'] = (~master['pvalue'].isna()).astype(int)
+master['is_eqtl_pair'] = (~master['pvalue'].isna()).astype(int)
 
 # add gene names to entries with a missing name (after adding eQTL info)
 master.loc[master.gname.isna(), 'gname'] = master.loc[master.gname.isna(), 'molecular_trait_id']
@@ -235,53 +215,10 @@ master.loc[master.startA.isna(), 'startA'] = (master.loc[master.startA.isna(), '
 master.loc[master.startA.isna(), 'startA'] -= 1     
 master.loc[master.endA.isna(), 'endA'] = master.loc[master.endA.isna(), 'sid'].str.replace('[0-9]+:', '')
 
-print('After outer merging with eqtls master has {} snp-gene pairs.'.format(master.shape[0]))
+print('After outer merging with eqtls, master has {} snp-gene pairs.'.format(master.shape[0]))
 
 # #### Add gene meta data 
-print("# #### Add gene meta data")
-# genes with index as chrom and genename 
-query_genes = genes_df.sort_values(['chrom', 'gname']).set_index(['chrom', 'gname'])
-
-def get_gene_meta_from_chrom_gname(query_genes, df, col_idxs=None):
-    # add gene positions (for missing gene meta data mostly)
-    gene_positions = []
-    
-    if col_idxs == None:
-        for i, sr in df.iterrows():
-            gene_info = query_genes.loc[(sr.chrom, sr.gene_name)]
-
-            if len(gene_info) == 0:
-                print('Houston, where is my coffee?')
-                break
-            elif len(gene_info) > 1:
-                print('Houston, we have a problem.')
-                break
-            else:
-                gene_positions.append(gene_info.values.tolist()[0])
-    else:
-        for i, sr in df.iterrows():
-
-            try: 
-                gene_info = query_genes.loc[(sr[col_idxs[0]], sr[col_idxs[1]])]
-
-                if len(gene_info) == 0:
-                    print(gene_info)
-                    raise Exception('Houston, where is my coffee?')
-                    
-                elif len(gene_info) > 1:
-                    #print('Picked the closest gene to the current SNP.')
-                    dists = np.abs(gene_info['start'].values - sr['startA'])
-                    closest_idx = np.argmin(dists)
-                    gene_positions.append(gene_info.values.tolist()[closest_idx][2])                
-                else:
-                    gene_positions.append(gene_info.values.tolist()[0][2])
-            except:
-                gene_positions.append(np.nan)
-                    
-    return(gene_positions)
-
-gene_ids = get_gene_meta_from_chrom_gname(query_genes, master, col_idxs=[0, 11])
-master.loc[:, 'gid'] = gene_ids
+master.loc[~master.molecular_trait_id.isna(), 'gid'] = master.loc[~master.molecular_trait_id.isna(), 'molecular_trait_id']
 
 # add back the original gene start and end
 master = master.merge(orig_genes_df[['start', 'end', 'gene_id', 'strand']], left_on='gid', right_on='gene_id')
@@ -321,7 +258,7 @@ master['is_closest_gene'] = closets_check
 print("# #### Add colocalization data")
 
 # add colocalization data for SNP and is_coloc_snp columns
-tmp_coloc = coloc_sig_full[[
+tmp_coloc = coloc_sig_full[['chr', 'pos',
  'pp_H0_Coloc_Summary',
  'pp_H1_Coloc_Summary',
  'pp_H2_Coloc_Summary',
@@ -342,7 +279,8 @@ tmp_coloc.rename(columns={'slope_gwas': 'gwas_slope',
                           'slope_se_gwas': 'gwas_slope_se',
                           'pval_nominal': 'gwas_pval_nominal',
                           'geneName': 'gname'}, inplace=True)
-master = master.merge(tmp_coloc, on=['rs_id', 'gname'], how='left')
+tmp_coloc['sid'] = tmp_coloc['chr'].str.replace('chr', '') + ':' +  tmp_coloc['pos'].astype(str) # NEW
+master = master.merge(tmp_coloc, left_on=['sid', 'gid'], right_on=['sid', 'gname'], how='left')
 
 # add column to filter on coloc snp status
 master['is_coloc_pair'] = (~master['pp_H4_Coloc_Summary'].isna()).astype(int)
@@ -357,7 +295,7 @@ loop_check = [0] * master.shape[0]
 for i, sr in master.iterrows():
 
     # check closest gene
-    rs_gene = (sr.sid, sr.gname)
+    rs_gene = (sr.sid, sr.gid)
     if rs_gene in fivekb_gloops_uniq:
         loop_check[i] = 1       
 
@@ -366,582 +304,561 @@ master['has_fithichip_loop'] = loop_check
 
 print('There are {} SNP-Gene loops.'.format(sum(loop_check)))
 
-
-## #### Add Promoter Capture Chicago Scores
-#
-## Include PC HiC data when it's available
-#if celltype in pchic.columns:
-#    sg_pchic_view = ['sg_chrA', 'sg_startA', 'sg_endA', 'sg_chrB', 'sg_startB', 'sg_endB', 'chicago_score']
-#    master = master.merge(sg_pchic_overlaps[sg_pchic_view],
-#                     left_on=['chrA', 'startA', 'endA', 'chrB', 'startB', 'endB'],
-#                     right_on=['sg_chrA', 'sg_startA', 'sg_endA', 'sg_chrB', 'sg_startB', 'sg_endB'], how='left')
-#    master.drop(['sg_chrA', 'sg_startA', 'sg_endA', 'sg_chrB', 'sg_startB', 'sg_endB'], inplace=True, axis=1)
-
-
 # #### Do the final reordering and saving
 
 # Include PC HiC data when it's available
-final_cols = ['sid',
- 'rs_id',
- 'gname',
- 'gid',
- 'chrA',
- 'endA',    
- 'startB',
- 'endB',
- 'is_eqtl_pair',
- 'is_coloc_pair',
- 'is_closest_gene',
- 'has_fithichip_loop',
- 'nvar',
- 'shape1',
- 'shape2',
- 'dist',
- 'npval',
- 'slope',
- 'ppval',
- 'bpval',
- 'qval',
- 'pp_H0_Coloc_Summary',
- 'pp_H1_Coloc_Summary',
- 'pp_H2_Coloc_Summary',
- 'pp_H3_Coloc_Summary',
- 'pp_H4_Coloc_Summary',
- 'gene_start', 
- 'gene_end', 
- 'gene_strand', 
- 'ref',
- 'alt',
- 'AC',
- 'AF',
- 'AN',
- 'gwas_slope',
- 'gwas_slope_se',
- 'gwas_pval_nominal',
- 'SampleSize']
+final_cols = ['sid', 
+	'rsid',
+	'gid',
+	'chrA',
+	'endA',
+	'startB',
+	'endB',
+	'is_eqtl_pair',
+	'is_coloc_pair',
+	'is_closest_gene',
+	'has_fithichip_loop',
+	'pvalue', 
+	'beta', 
+	'fdr',
+	'dist',
+	'pp_H0_Coloc_Summary',
+	'pp_H1_Coloc_Summary',
+	'pp_H2_Coloc_Summary',
+	'pp_H3_Coloc_Summary',
+	'pp_H4_Coloc_Summary',
+	'gene_start',
+	'gene_end',
+	'ref_x', 
+	'alt_x',
+	'AC',
+	'AF',
+	'AN',
+	'gwas_slope',
+	'gwas_slope_se',
+	'gwas_pval_nominal',
+	'SampleSize']
 
-#if celltype in pchic.columns:
-#    final_cols += ['chicago_score']
 master = master[final_cols]
-master.rename(columns={'chrA':'chrom', 'endA': 'snp_pos', 
+master.rename(columns={'chrA':'chrom', 'endA': 'snp_pos', 'ref_x': 'ref', 'alt_x': 'alt',
                        'startB': 'tss_start', 'endB': 'tss_end',
                        'gname': 'gene_name', 'gid': 'gene_id'}, inplace=True)
 
-master.sort_values(['chrom', 'snp_pos', 'tss_start', 'rs_id'], inplace=True)
+master.sort_values(['chrom', 'snp_pos', 'tss_start', 'rsid'], inplace=True)
 master.snp_pos = master.snp_pos.astype(int)
 
 # write out the master data
 fn = os.path.join(outdir, 'master.tsv')
 master.to_csv(fn, sep='\t', header=True, index=False)
 
-fn = os.path.join(outdir, 'master.xlsx')
-excel_master = master.sort_values('rs_id').set_index('rs_id')
-excel_master.to_excel(fn, na_rep='nan')
-
-#########################################################################################
-# Make WashU files 
-#########################################################################################
-
-def bedpe_to_WashU_longrange(fn, df):
-    """
-        Convert from a loop bedpe file into WashU longrange, 
-        includes bgzip and tabix of the fn. 
-        
-        Params
-        -------
-        fn: str
-            path to the longrange output file (without gz)
-            
-        df: dataframe
-            columns 1-6 are as expected and column 7 is the p or q-value. 
-            
-        Output
-        ------
-        gzfn: str
-            path to the longrange with bgzip compression
-        tabix_fn: str
-            path to the index of the longrange file
-            
-    """
-
-    # parsing the data into WashU longrage format
-    data = []
-    for sr in df.values.tolist():
-
-        # calculate the -log(FDR)
-        qval = -np.log(sr[6])
-
-        # get the first pair data
-        second_pair_str = '{}:{}-{},{:.5f}'.format(*sr[3:6], qval)
-        first_row = sr[0:3] + [second_pair_str]
-
-        # get the second pair data
-        first_pair_str = '{}:{}-{},{:.5f}'.format(*sr[0:3], qval)
-        second_row = sr[3:6] + [first_pair_str]
-
-        # add each data row
-        data.append(first_row)
-        data.append(second_row)
-
-    data = sorted(data, key=lambda x: (x[0], x[1], x[2]))
-
-    # writing out the data
-    with open(fn, 'w') as f:
-        for line in data:
-            info = [str(x) for x in line]
-            info = '\t'.join(info)
-            f.write(info + '\n')
-            
-    # run bgzip
-    cmd = '{} {}'.format(bgzip, fn)
-    print(cmd)
-    job = sp.Popen(cmd, stderr=sp.PIPE,stdout=sp.PIPE, shell=True)
-
-    out, err = job.communicate()
-    print('out:', out.decode())
-    print('err:', err.decode())
-    
-    # run tabix
-    lrange_gzfn = fn + '.gz'
-    cmd = '{} -f {}'.format(tabix, lrange_gzfn)
-    print(cmd)
-    job = sp.Popen(cmd, stderr=sp.PIPE,stdout=sp.PIPE, shell=True)
-
-    out, err = job.communicate()
-    print('out:', out.decode())
-    print('err:', err.decode())
-
-    print('Created the gzfn: {}'.format(fn + '.gz'))
-    print('Created the tabix: {}'.format(fn + '.gz.tbi'))
-
-def bed_WashU_bedgz(fn, df):
-    """
-        Convert from a bed dataframe into WashU longrange file 
-        includes bgzip and tabix of the fn. 
-        
-        Params
-        -------
-        fn: str
-            path to the longrange output file (without gz)
-            
-        df: dataframe
-            columns 1-3 are as expected and column 7 is the p or q-value. 
-            
-        Output
-        ------
-        gzfn: str
-            path to the longrange with bgzip compression
-        tabix_fn: str
-            path to the index of the longrange file
-            
-    """
-
-    # parsing the data into WashU longrage format
-    data = []
-    for sr in df.values.tolist():
-        data.append(sr[0:4])
-    data = sorted(data, key=lambda x: (x[0], x[1], x[2]))
-
-    # writing out the data
-    with open(fn, 'w') as f:
-        for line in data:
-            info = [str(x) for x in line]
-            info = '\t'.join(info)
-            f.write(info + '\n')
-            
-    # run bgzip
-    cmd = '{} {}'.format(bgzip, fn)
-    print(cmd)
-    job = sp.Popen(cmd, stderr=sp.PIPE,stdout=sp.PIPE, shell=True)
-
-    out, err = job.communicate()
-    print('out:', out.decode())
-    print('err:', err.decode())
-    
-    # run tabix
-    gzfn = fn + '.gz'
-    cmd = '{} -f {}'.format(tabix, gzfn)
-    print(cmd)
-    job = sp.Popen(cmd, stderr=sp.PIPE,stdout=sp.PIPE, shell=True)
-
-    out, err = job.communicate()
-    print('out:', out.decode())
-    print('err:', err.decode())
-
-    print('Created the gzfn: {}'.format(fn + '.gz'))
-    print('Created the tabix: {}'.format(fn + '.gz.tbi'))
-
-def bed_to_WashU_refbed(fn, df):
-    """ 
-        Convert from a bed dataframe into WashU longrange file 
-        includes bgzip and tabix of the fn. 
-        
-        Params
-        -------
-        fn: str
-            path to the longrange output file (without gz)
-            
-        df: dataframe
-            columns 1-3 are as expected and column 7 is the p or q-value. 
-            
-        Output
-        ------
-        gzfn: str
-            path to the longrange with bgzip compression
-        tabix_fn: str
-            path to the index of the longrange file
-            
-    """
-
-    # parsing the data into WashU longrage format
-    data = df.values.tolist()
-    data = sorted(data, key=lambda x: (x[0], x[1], x[2]))
-
-    # writing out the data
-    with open(fn, 'w') as f:
-        for line in data:
-            info = [str(x) for x in line]
-            info = '\t'.join(info)
-            f.write(info + '\n')
-    
-    # run bgzip
-    cmd = '{} -f {}'.format(bgzip, fn) 
-    print(cmd)
-    job = sp.Popen(cmd, stderr=sp.PIPE,stdout=sp.PIPE, shell=True)
-
-    out, err = job.communicate()
-    print('out:', out.decode())
-    print('err:', err.decode())
-
-    # run tabix
-    gzfn = fn + '.gz'
-    cmd = '{} {}'.format(tabix, gzfn)
-    print(cmd)
-    job = sp.Popen(cmd, stderr=sp.PIPE,stdout=sp.PIPE, shell=True)
-
-    out, err = job.communicate()
-    print('out:', out.decode())
-    print('err:', err.decode())
-
-    print('Created the gzfn: {}'.format(fn + '.gz'))
-    print('Created the tabix: {}'.format(fn + '.gz.tbi'))
-
-
-# make the refbed link for genes (status: running)
-final_sg_cols = ['chrom', 'gene_start' ,'gene_end', 'gene_name', 'gene_strand']
-final_sg_genes = master.loc[(master.has_fithichip_loop == 1), final_sg_cols]
-
-final_sg_genes.gene_start = final_sg_genes.gene_start.astype(int)
-final_sg_genes.gene_end = final_sg_genes.gene_end.astype(int)
-
-final_sg_genes = final_sg_genes.loc[~final_sg_genes.duplicated()]
-final_sg_genes['chr'] = final_sg_genes['chrom'] 
-final_sg_genes['transcript_start'] = final_sg_genes['gene_start']
-final_sg_genes['transcript_stop'] = final_sg_genes['gene_end']
-final_sg_genes['translation_start'] = final_sg_genes['gene_start']
-final_sg_genes['translation_stop'] = final_sg_genes['gene_end']
-final_sg_genes['strand'] = final_sg_genes['gene_strand']
-final_sg_genes['gene_name'] = final_sg_genes['gene_name']
-final_sg_genes['transcript_id'] = final_sg_genes['gene_name']
-final_sg_genes['type'] = 'coding'
-final_sg_genes['exon_gene_start'] = final_sg_genes['gene_start']
-final_sg_genes['exon_stops'] = final_sg_genes['gene_end']
-refcols = ['chr', 'transcript_start', 'transcript_stop', 'translation_start',
-           'translation_stop', 'strand', 'gene_name', 'transcript_id',
-           'type', 'exon_gene_start', 'exon_stops']
-final_sg_genes = final_sg_genes.loc[:, refcols]
-sg_genes_fn = os.path.join(outdir, 'gs_genes.bed')
-bed_to_WashU_refbed(sg_genes_fn, final_sg_genes)
-
-
-# make the longrange link for raw fithichip data (status: running)
-loop_gz = os.path.abspath(loop_fn.replace('.bed', '_WashU.bed.gz'))
-loop_tbi = os.path.abspath(loop_fn.replace('.bed', '_WashU.bed.gz.tbi'))
-loop_gz_link = os.path.join(outdir, os.path.basename(loop_gz))
-loop_tbi_link = os.path.join(outdir, os.path.basename(loop_tbi))
-if not os.path.exists(loop_gz_link):
-    os.link(loop_gz, loop_gz_link)
-    os.link(loop_tbi, loop_tbi_link)
-
-
-# ## All 5kb Washu Files
-
-# make the longrange link for snp-gene fivekb pairs (status: running)
-#fivekb_lrange = fivekb_lrange[fivekb_lrange.rs_id.notna()].reset_index(drop=True)
-fivekb_lrange = fivekb_genes.copy()
-
-# convert full for viz
-fivekb_lrange = fivekb_lrange[['chrA', 'startA', 'endA', 'chrB', 'startB', 'endB']]
-fivekb_lrange.iloc[:, 1] -= 1 
-fivekb_lrange['score'] = 0.01
-
-fivekb_snp_gene_pairs_fn = os.path.join(outdir, '5kb.snp_gene_pairs.bed')
-bedpe_to_WashU_longrange(fivekb_snp_gene_pairs_fn, fivekb_lrange)
-
-# plot all snp-gene pairs with a loop
-fivekb_gloops_lrange = fivekb_gloops.iloc[:, [11,12,13,14,15,16,18]]
-
-fivekb_snp_gene_loops_fn = os.path.join(outdir, '5kb.snp_gene_loops.bed')
-bedpe_to_WashU_longrange(fivekb_snp_gene_loops_fn, fivekb_gloops_lrange)
-
-
-# ## eQTL WashU Files
-
-# make the longrange link for snp-gene eQTL pairs (status: running)
-eqtl_lrange = master.loc[master.is_eqtl_pair == 1]
-eqtl_lrange = eqtl_lrange[eqtl_lrange.rs_id.notna()].reset_index(drop=True)
-
-# convert full for viz
-eqtl_snp_gene_pairs = eqtl_lrange[['chrom', 'snp_pos', 'snp_pos', 'chrom', 'tss_start', 'tss_end', 'gene_name']]
-eqtl_snp_gene_pairs.iloc[:, 1] -= 1 
-eqtl_snp_gene_pairs['score'] = 0.01
-
-eqtl_snp_gene_pairs_fn = os.path.join(outdir, 'eqtl.snp_gene_pairs.bed')
-bedpe_to_WashU_longrange(eqtl_snp_gene_pairs_fn, eqtl_snp_gene_pairs.iloc[:, [0,1,2,3,4,5,7]])
-
-# make the bed for egenes only (status: running)
-eqtl_genes = eqtl_lrange.loc[:, ['chrom', 'gene_start', 'gene_end', 'gene_name']]
-eqtl_genes_only_fn = os.path.join(outdir, 'eqtl.genes_only.bed')
-bed_WashU_bedgz(eqtl_genes_only_fn, eqtl_genes)
-
-
-# In[49]:
-
-
-# In[45]:
-
-
-# make the bed for eSNPs only (status: running)
-eqtl_snps = eqtl_lrange.loc[:, ['chrom', 'snp_pos', 'snp_pos', 'rs_id']]
-eqtl_snps.iloc[:, 1] -= 1
-eqtl_snps = pbt.BedTool.from_dataframe(eqtl_snps)
-eqtl_snps = eqtl_snps.slop(b=500, g=gs_fn).to_dataframe()
-eqtl_snps_only_fn = os.path.join(outdir, 'eqtl.snps_only.bed')
-bed_WashU_bedgz(eqtl_snps_only_fn, eqtl_snps)
-
-
-# In[50]:
-
-
-# In[46]:
-
-
-# # make the longrange link for snp-gene eQTL loops (status: didn't add loop coordinates to master.)
-# eqtl_loops = master.loc[master.is_eqtl_pair == 1]
-
-
-# ## Coloc WashU Files
-
-# In[51]:
-
-
-# In[47]:
-
-
-# make the bed for colocalized SNPs (status: running)
-final_snps = coloc_sig_df.copy()
-final_snps = final_snps.loc[~final_snps.duplicated()]
-final_snps = pbt.BedTool.from_dataframe(final_snps)
-final_snps = final_snps.slop(b=500, g=gs_fn)
-final_snps = final_snps.to_dataframe()[0:4]
-
-
-# In[52]:
-
-
-# In[48]:
-
-
-coloc_snps_only_fn = os.path.join(outdir, 'coloc.snps_only.bed')
-bed_WashU_bedgz(coloc_snps_only_fn, final_snps)
-
-
-# In[53]:
-
-
-# In[49]:
-
-
-# make the bed for colocalized genes (status: running)
-final_coloc_snp_genes_pairs = master[(master.is_coloc_pair == 1)]
-final_coloc_genes = final_coloc_snp_genes_pairs[['chrom', 'gene_start' ,'gene_end', 'gene_name']]
-coloc_genes_only_fn = os.path.join(outdir, 'coloc.genes_only.bed')
-bed_WashU_bedgz(coloc_genes_only_fn, final_coloc_genes)
-
-
-# In[54]:
-
-
-# In[50]:
-
-
-# make the longrange for colocalized snp-gene pairs (status: running)
-final_coloc_snp_genes_pairs_out = final_coloc_snp_genes_pairs[['chrom', 'snp_pos', 'snp_pos', 'chrom', 
-                                                               'tss_start', 'tss_end', 'gene_name']]
-final_coloc_snp_genes_pairs_out.iloc[:, 1] -= 1
-final_coloc_snp_genes_pairs_out.iloc[:, 6] = 0.01
-
-coloc_snp_gene_pairs_fn = os.path.join(outdir, 'coloc.snp_gene_pairs.bed')
-bedpe_to_WashU_longrange(coloc_snp_gene_pairs_fn, final_coloc_snp_genes_pairs_out)
-
-
-# In[55]:
-
-
-# In[51]:
-
-
-# make the longrange for colocalized snp-gene loops (status: running)
-final_coloc_snp_genes_loops = fivekb_gloops[(fivekb_gloops[10].isin(final_coloc_snp_genes_pairs['rs_id'])) & 
-              (fivekb_gloops[12].isin(final_coloc_snp_genes_pairs['gene_id']))]
-final_coloc_snp_genes_loops_out = final_coloc_snp_genes_loops.iloc[:, [14,15,16,17,18,19,21]]
-
-coloc_snp_gene_loops_fn = os.path.join(outdir, 'coloc.snp_gene_loops.bed')
-bedpe_to_WashU_longrange(coloc_snp_gene_loops_fn, final_coloc_snp_genes_loops_out)
-
-
-# In[56]:
-
-
-# In[52]:
-
-final_coloc_snp_genes_loops_out
-
-
-# In[57]:
-
-
-# In[53]:
-
-
-# make the loop anchors as bed files (status: developing)
-left = final_coloc_snp_genes_loops[[14,15,16,6]].T.reset_index(drop=True).T
-left[3] = 'L-' + left[3] 
-right = final_coloc_snp_genes_loops[[17,18,19,6]].T.reset_index(drop=True).T
-right[3] = 'R-' + right[3] 
-anchors = pd.concat([left, right], ignore_index=True, axis=0)
-
-
-# In[58]:
-
-
-# In[54]:
-coloc_anchors_fn = os.path.join(outdir, 'coloc.anchors_only.bed')
-bed_WashU_bedgz(coloc_anchors_fn, anchors)
-
-
-# # make the hub json file
-
-#gwas, cline = coloc_fn.split('/')[5:7]
-
-print("# make the hub json file")
-
-gene_refbed_json = {'type': 'refbed',
-                    'filename': os.path.basename(sg_genes_fn) + '.gz',
-                    'name': 'Gencode V19',
-                    'showOnHubLoad': True
-                   }
-
-orig_loops_json = {'type': 'longrange',
-                   'filename': os.path.basename(loop_gz_link),
-                   'name': 'Original Loops',
-                   'options': {'displayMode': 'arc', 'color':'red'},
-                   'showOnHubLoad': True
-                }
-
-# fivekb_snp_gene_pairs_json = {'type': 'longrange',
-#                    'filename': os.path.basename(fivekb_snp_gene_pairs_fn) + '.gz',
-#                    'name': '5kb SNP-Gene Pairs',
-#                    'options': {'displayMode': 'arc', 'color':'purple', 'height': 200},
-#                    'showOnHubLoad': False
-#                 }
-
-# fivekb_snp_gene_loops_json = {'type': 'longrange',
-#                    'filename': os.path.basename(fivekb_snp_gene_loops_fn) + '.gz',
-#                    'name': '5kb SNP-Gene Loops',
-#                    'options': {'displayMode': 'arc', 'color':'red', 'height': 200},
-#                    'showOnHubLoad': False
-#                 }
-
-
-eqtl_snp_gene_pairs_json = {'type': 'longrange',
-                 'filename': os.path.basename(eqtl_snp_gene_pairs_fn) + '.gz',
-                 'name': 'eQTL SNP-Gene Pairs',
-                 'options': {'displayMode': 'arc', 'color':'purple', 'height': 200},
-                 'showOnHubLoad': True
-                }
-
-
-eqtl_snps_only_json = {'type': 'bed',
-                 'filename': os.path.basename(eqtl_snps_only_fn) + '.gz',
-                 'name': 'eQTL SNPs only',
-                 'options': {'color':'purple'},
-                 'showOnHubLoad': True
-
-                }
-
-
-eqtl_genes_only_json = {'type': 'bed',
-                 'filename': os.path.basename(eqtl_genes_only_fn) + '.gz',
-                 'name': 'eQTL genes only',
-                 'options': {'color':'purple'},
-                 'showOnHubLoad': True
-                }
-
-
-coloc_snp_gene_pairs_json = {'type': 'longrange',
-                 'filename': os.path.basename(coloc_snp_gene_pairs_fn) + '.gz',
-                 'name': 'coloc SNP-Gene Pairs',
-                 'options': {'displayMode': 'arc', 'color':'purple', 'height': 200},
-                 'showOnHubLoad': True
-                }
-
-coloc_snp_gene_loops_json = {'type': 'longrange',
-                 'filename': os.path.basename(coloc_snp_gene_loops_fn) + '.gz',
-                 'name': 'coloc SNP-Gene Loops',
-                 'options': {'displayMode': 'arc', 'color':'red', 'height': 200},
-                 'showOnHubLoad': True
-                }
-
-coloc_snps_only_json = {'type': 'bed',
-                 'filename': os.path.basename(coloc_snps_only_fn) + '.gz',
-                 'name': 'coloc SNPs only',
-                 'options': {'color':'purple'},
-                 'showOnHubLoad': False
-                }
-
-
-coloc_genes_only_json = {'type': 'bed',
-                 'filename': os.path.basename(coloc_genes_only_fn) + '.gz',
-                 'name': 'coloc genes only',
-                 'options': {'color':'purple'},
-                 'showOnHubLoad': False
-                }
-
-
-coloc_anchors_only_json = {'type': 'bed',
-                 'filename': os.path.basename(coloc_anchors_fn) + '.gz',
-                 'name': 'coloc loop anchors only',
-                 'options': {'color':'red'},
-                 'showOnHubLoad': False
-                }
-
-
-#hub_json = [orig_loops_json, sg_pairs_json, sg_loops_json, sg_snps_json, sg_genes_json]
-hub_json = [gene_refbed_json, 
-            #fivekb_snp_gene_pairs_json,
-            #fivekb_snp_gene_loops_json,
-            eqtl_snps_only_json,
-            eqtl_genes_only_json,
-            eqtl_snp_gene_pairs_json,
-            coloc_snps_only_json,
-            coloc_genes_only_json,
-            coloc_snp_gene_pairs_json, 
-            coloc_anchors_only_json,
-            coloc_snp_gene_loops_json,
-            orig_loops_json, 
-           ]
-
-hub_json_fn = os.path.join(outdir, 'hub.config.json')
-with open(hub_json_fn, 'w') as f:
-    f.write(json.dumps(hub_json, indent=4))
+#fn = os.path.join(outdir, 'master.xlsx')
+#excel_master = master.sort_values('rs_id').set_index('rs_id')
+#excel_master.to_excel(fn, na_rep='nan')
+
+##########################################################################################
+## Make WashU files 
+##########################################################################################
+#
+#def bedpe_to_WashU_longrange(fn, df):
+#    """
+#        Convert from a loop bedpe file into WashU longrange, 
+#        includes bgzip and tabix of the fn. 
+#        
+#        Params
+#        -------
+#        fn: str
+#            path to the longrange output file (without gz)
+#            
+#        df: dataframe
+#            columns 1-6 are as expected and column 7 is the p or q-value. 
+#            
+#        Output
+#        ------
+#        gzfn: str
+#            path to the longrange with bgzip compression
+#        tabix_fn: str
+#            path to the index of the longrange file
+#            
+#    """
+#
+#    # parsing the data into WashU longrage format
+#    data = []
+#    for sr in df.values.tolist():
+#
+#        # calculate the -log(FDR)
+#        qval = -np.log(sr[6])
+#
+#        # get the first pair data
+#        second_pair_str = '{}:{}-{},{:.5f}'.format(*sr[3:6], qval)
+#        first_row = sr[0:3] + [second_pair_str]
+#
+#        # get the second pair data
+#        first_pair_str = '{}:{}-{},{:.5f}'.format(*sr[0:3], qval)
+#        second_row = sr[3:6] + [first_pair_str]
+#
+#        # add each data row
+#        data.append(first_row)
+#        data.append(second_row)
+#
+#    data = sorted(data, key=lambda x: (x[0], x[1], x[2]))
+#
+#    # writing out the data
+#    with open(fn, 'w') as f:
+#        for line in data:
+#            info = [str(x) for x in line]
+#            info = '\t'.join(info)
+#            f.write(info + '\n')
+#            
+#    # run bgzip
+#    cmd = '{} {}'.format(bgzip, fn)
+#    print(cmd)
+#    job = sp.Popen(cmd, stderr=sp.PIPE,stdout=sp.PIPE, shell=True)
+#
+#    out, err = job.communicate()
+#    print('out:', out.decode())
+#    print('err:', err.decode())
+#    
+#    # run tabix
+#    lrange_gzfn = fn + '.gz'
+#    cmd = '{} -f {}'.format(tabix, lrange_gzfn)
+#    print(cmd)
+#    job = sp.Popen(cmd, stderr=sp.PIPE,stdout=sp.PIPE, shell=True)
+#
+#    out, err = job.communicate()
+#    print('out:', out.decode())
+#    print('err:', err.decode())
+#
+#    print('Created the gzfn: {}'.format(fn + '.gz'))
+#    print('Created the tabix: {}'.format(fn + '.gz.tbi'))
+#
+#def bed_WashU_bedgz(fn, df):
+#    """
+#        Convert from a bed dataframe into WashU longrange file 
+#        includes bgzip and tabix of the fn. 
+#        
+#        Params
+#        -------
+#        fn: str
+#            path to the longrange output file (without gz)
+#            
+#        df: dataframe
+#            columns 1-3 are as expected and column 7 is the p or q-value. 
+#            
+#        Output
+#        ------
+#        gzfn: str
+#            path to the longrange with bgzip compression
+#        tabix_fn: str
+#            path to the index of the longrange file
+#            
+#    """
+#
+#    # parsing the data into WashU longrage format
+#    data = []
+#    for sr in df.values.tolist():
+#        data.append(sr[0:4])
+#    data = sorted(data, key=lambda x: (x[0], x[1], x[2]))
+#
+#    # writing out the data
+#    with open(fn, 'w') as f:
+#        for line in data:
+#            info = [str(x) for x in line]
+#            info = '\t'.join(info)
+#            f.write(info + '\n')
+#            
+#    # run bgzip
+#    cmd = '{} {}'.format(bgzip, fn)
+#    print(cmd)
+#    job = sp.Popen(cmd, stderr=sp.PIPE,stdout=sp.PIPE, shell=True)
+#
+#    out, err = job.communicate()
+#    print('out:', out.decode())
+#    print('err:', err.decode())
+#    
+#    # run tabix
+#    gzfn = fn + '.gz'
+#    cmd = '{} -f {}'.format(tabix, gzfn)
+#    print(cmd)
+#    job = sp.Popen(cmd, stderr=sp.PIPE,stdout=sp.PIPE, shell=True)
+#
+#    out, err = job.communicate()
+#    print('out:', out.decode())
+#    print('err:', err.decode())
+#
+#    print('Created the gzfn: {}'.format(fn + '.gz'))
+#    print('Created the tabix: {}'.format(fn + '.gz.tbi'))
+#
+#def bed_to_WashU_refbed(fn, df):
+#    """ 
+#        Convert from a bed dataframe into WashU longrange file 
+#        includes bgzip and tabix of the fn. 
+#        
+#        Params
+#        -------
+#        fn: str
+#            path to the longrange output file (without gz)
+#            
+#        df: dataframe
+#            columns 1-3 are as expected and column 7 is the p or q-value. 
+#            
+#        Output
+#        ------
+#        gzfn: str
+#            path to the longrange with bgzip compression
+#        tabix_fn: str
+#            path to the index of the longrange file
+#            
+#    """
+#
+#    # parsing the data into WashU longrage format
+#    data = df.values.tolist()
+#    data = sorted(data, key=lambda x: (x[0], x[1], x[2]))
+#
+#    # writing out the data
+#    with open(fn, 'w') as f:
+#        for line in data:
+#            info = [str(x) for x in line]
+#            info = '\t'.join(info)
+#            f.write(info + '\n')
+#    
+#    # run bgzip
+#    cmd = '{} -f {}'.format(bgzip, fn) 
+#    print(cmd)
+#    job = sp.Popen(cmd, stderr=sp.PIPE,stdout=sp.PIPE, shell=True)
+#
+#    out, err = job.communicate()
+#    print('out:', out.decode())
+#    print('err:', err.decode())
+#
+#    # run tabix
+#    gzfn = fn + '.gz'
+#    cmd = '{} {}'.format(tabix, gzfn)
+#    print(cmd)
+#    job = sp.Popen(cmd, stderr=sp.PIPE,stdout=sp.PIPE, shell=True)
+#
+#    out, err = job.communicate()
+#    print('out:', out.decode())
+#    print('err:', err.decode())
+#
+#    print('Created the gzfn: {}'.format(fn + '.gz'))
+#    print('Created the tabix: {}'.format(fn + '.gz.tbi'))
+#
+#
+## make the refbed link for genes (status: running)
+#final_sg_cols = ['chrom', 'gene_start' ,'gene_end', 'gene_name', 'gene_strand']
+#final_sg_genes = master.loc[(master.has_fithichip_loop == 1), final_sg_cols]
+#
+#final_sg_genes.gene_start = final_sg_genes.gene_start.astype(int)
+#final_sg_genes.gene_end = final_sg_genes.gene_end.astype(int)
+#
+#final_sg_genes = final_sg_genes.loc[~final_sg_genes.duplicated()]
+#final_sg_genes['chr'] = final_sg_genes['chrom'] 
+#final_sg_genes['transcript_start'] = final_sg_genes['gene_start']
+#final_sg_genes['transcript_stop'] = final_sg_genes['gene_end']
+#final_sg_genes['translation_start'] = final_sg_genes['gene_start']
+#final_sg_genes['translation_stop'] = final_sg_genes['gene_end']
+#final_sg_genes['strand'] = final_sg_genes['gene_strand']
+#final_sg_genes['gene_name'] = final_sg_genes['gene_name']
+#final_sg_genes['transcript_id'] = final_sg_genes['gene_name']
+#final_sg_genes['type'] = 'coding'
+#final_sg_genes['exon_gene_start'] = final_sg_genes['gene_start']
+#final_sg_genes['exon_stops'] = final_sg_genes['gene_end']
+#refcols = ['chr', 'transcript_start', 'transcript_stop', 'translation_start',
+#           'translation_stop', 'strand', 'gene_name', 'transcript_id',
+#           'type', 'exon_gene_start', 'exon_stops']
+#final_sg_genes = final_sg_genes.loc[:, refcols]
+#sg_genes_fn = os.path.join(outdir, 'gs_genes.bed')
+#bed_to_WashU_refbed(sg_genes_fn, final_sg_genes)
+#
+#
+## make the longrange link for raw fithichip data (status: running)
+#loop_gz = os.path.abspath(loop_fn.replace('.bed', '_WashU.bed.gz'))
+#loop_tbi = os.path.abspath(loop_fn.replace('.bed', '_WashU.bed.gz.tbi'))
+#loop_gz_link = os.path.join(outdir, os.path.basename(loop_gz))
+#loop_tbi_link = os.path.join(outdir, os.path.basename(loop_tbi))
+#if not os.path.exists(loop_gz_link):
+#    os.link(loop_gz, loop_gz_link)
+#    os.link(loop_tbi, loop_tbi_link)
+#
+#
+## ## All 5kb Washu Files
+#
+## make the longrange link for snp-gene fivekb pairs (status: running)
+##fivekb_lrange = fivekb_lrange[fivekb_lrange.rs_id.notna()].reset_index(drop=True)
+#fivekb_lrange = fivekb_genes.copy()
+#
+## convert full for viz
+#fivekb_lrange = fivekb_lrange[['chrA', 'startA', 'endA', 'chrB', 'startB', 'endB']]
+#fivekb_lrange.iloc[:, 1] -= 1 
+#fivekb_lrange['score'] = 0.01
+#
+#fivekb_snp_gene_pairs_fn = os.path.join(outdir, '5kb.snp_gene_pairs.bed')
+#bedpe_to_WashU_longrange(fivekb_snp_gene_pairs_fn, fivekb_lrange)
+#
+## plot all snp-gene pairs with a loop
+#fivekb_gloops_lrange = fivekb_gloops.iloc[:, [11,12,13,14,15,16,18]]
+#
+#fivekb_snp_gene_loops_fn = os.path.join(outdir, '5kb.snp_gene_loops.bed')
+#bedpe_to_WashU_longrange(fivekb_snp_gene_loops_fn, fivekb_gloops_lrange)
+#
+#
+## ## eQTL WashU Files
+#
+## make the longrange link for snp-gene eQTL pairs (status: running)
+#eqtl_lrange = master.loc[master.is_eqtl_pair == 1]
+#eqtl_lrange = eqtl_lrange[eqtl_lrange.rs_id.notna()].reset_index(drop=True)
+#
+## convert full for viz
+#eqtl_snp_gene_pairs = eqtl_lrange[['chrom', 'snp_pos', 'snp_pos', 'chrom', 'tss_start', 'tss_end', 'gene_name']]
+#eqtl_snp_gene_pairs.iloc[:, 1] -= 1 
+#eqtl_snp_gene_pairs['score'] = 0.01
+#
+#eqtl_snp_gene_pairs_fn = os.path.join(outdir, 'eqtl.snp_gene_pairs.bed')
+#bedpe_to_WashU_longrange(eqtl_snp_gene_pairs_fn, eqtl_snp_gene_pairs.iloc[:, [0,1,2,3,4,5,7]])
+#
+## make the bed for egenes only (status: running)
+#eqtl_genes = eqtl_lrange.loc[:, ['chrom', 'gene_start', 'gene_end', 'gene_name']]
+#eqtl_genes_only_fn = os.path.join(outdir, 'eqtl.genes_only.bed')
+#bed_WashU_bedgz(eqtl_genes_only_fn, eqtl_genes)
+#
+#
+## In[49]:
+#
+#
+## In[45]:
+#
+#
+## make the bed for eSNPs only (status: running)
+#eqtl_snps = eqtl_lrange.loc[:, ['chrom', 'snp_pos', 'snp_pos', 'rs_id']]
+#eqtl_snps.iloc[:, 1] -= 1
+#eqtl_snps = pbt.BedTool.from_dataframe(eqtl_snps)
+#eqtl_snps = eqtl_snps.slop(b=500, g=gs_fn).to_dataframe()
+#eqtl_snps_only_fn = os.path.join(outdir, 'eqtl.snps_only.bed')
+#bed_WashU_bedgz(eqtl_snps_only_fn, eqtl_snps)
+#
+#
+## In[50]:
+#
+#
+## In[46]:
+#
+#
+## # make the longrange link for snp-gene eQTL loops (status: didn't add loop coordinates to master.)
+## eqtl_loops = master.loc[master.is_eqtl_pair == 1]
+#
+#
+## ## Coloc WashU Files
+#
+## In[51]:
+#
+#
+## In[47]:
+#
+#
+## make the bed for colocalized SNPs (status: running)
+#final_snps = coloc_sig_df.copy()
+#final_snps = final_snps.loc[~final_snps.duplicated()]
+#final_snps = pbt.BedTool.from_dataframe(final_snps)
+#final_snps = final_snps.slop(b=500, g=gs_fn)
+#final_snps = final_snps.to_dataframe()[0:4]
+#
+#
+## In[52]:
+#
+#
+## In[48]:
+#
+#
+#coloc_snps_only_fn = os.path.join(outdir, 'coloc.snps_only.bed')
+#bed_WashU_bedgz(coloc_snps_only_fn, final_snps)
+#
+#
+## In[53]:
+#
+#
+## In[49]:
+#
+#
+## make the bed for colocalized genes (status: running)
+#final_coloc_snp_genes_pairs = master[(master.is_coloc_pair == 1)]
+#final_coloc_genes = final_coloc_snp_genes_pairs[['chrom', 'gene_start' ,'gene_end', 'gene_name']]
+#coloc_genes_only_fn = os.path.join(outdir, 'coloc.genes_only.bed')
+#bed_WashU_bedgz(coloc_genes_only_fn, final_coloc_genes)
+#
+#
+## In[54]:
+#
+#
+## In[50]:
+#
+#
+## make the longrange for colocalized snp-gene pairs (status: running)
+#final_coloc_snp_genes_pairs_out = final_coloc_snp_genes_pairs[['chrom', 'snp_pos', 'snp_pos', 'chrom', 
+#                                                               'tss_start', 'tss_end', 'gene_name']]
+#final_coloc_snp_genes_pairs_out.iloc[:, 1] -= 1
+#final_coloc_snp_genes_pairs_out.iloc[:, 6] = 0.01
+#
+#coloc_snp_gene_pairs_fn = os.path.join(outdir, 'coloc.snp_gene_pairs.bed')
+#bedpe_to_WashU_longrange(coloc_snp_gene_pairs_fn, final_coloc_snp_genes_pairs_out)
+#
+#
+## In[55]:
+#
+#
+## In[51]:
+#
+#
+## make the longrange for colocalized snp-gene loops (status: running)
+#final_coloc_snp_genes_loops = fivekb_gloops[(fivekb_gloops[10].isin(final_coloc_snp_genes_pairs['rs_id'])) & 
+#              (fivekb_gloops[12].isin(final_coloc_snp_genes_pairs['gene_id']))]
+#final_coloc_snp_genes_loops_out = final_coloc_snp_genes_loops.iloc[:, [14,15,16,17,18,19,21]]
+#
+#coloc_snp_gene_loops_fn = os.path.join(outdir, 'coloc.snp_gene_loops.bed')
+#bedpe_to_WashU_longrange(coloc_snp_gene_loops_fn, final_coloc_snp_genes_loops_out)
+#
+#
+## In[56]:
+#
+#
+## In[52]:
+#
+#final_coloc_snp_genes_loops_out
+#
+#
+## In[57]:
+#
+#
+## In[53]:
+#
+#
+## make the loop anchors as bed files (status: developing)
+#left = final_coloc_snp_genes_loops[[14,15,16,6]].T.reset_index(drop=True).T
+#left[3] = 'L-' + left[3] 
+#right = final_coloc_snp_genes_loops[[17,18,19,6]].T.reset_index(drop=True).T
+#right[3] = 'R-' + right[3] 
+#anchors = pd.concat([left, right], ignore_index=True, axis=0)
+#
+#
+## In[58]:
+#
+#
+## In[54]:
+#coloc_anchors_fn = os.path.join(outdir, 'coloc.anchors_only.bed')
+#bed_WashU_bedgz(coloc_anchors_fn, anchors)
+#
+#
+## # make the hub json file
+#
+##gwas, cline = coloc_fn.split('/')[5:7]
+#
+#print("# make the hub json file")
+#
+#gene_refbed_json = {'type': 'refbed',
+#                    'filename': os.path.basename(sg_genes_fn) + '.gz',
+#                    'name': 'Gencode V19',
+#                    'showOnHubLoad': True
+#                   }
+#
+#orig_loops_json = {'type': 'longrange',
+#                   'filename': os.path.basename(loop_gz_link),
+#                   'name': 'Original Loops',
+#                   'options': {'displayMode': 'arc', 'color':'red'},
+#                   'showOnHubLoad': True
+#                }
+#
+## fivekb_snp_gene_pairs_json = {'type': 'longrange',
+##                    'filename': os.path.basename(fivekb_snp_gene_pairs_fn) + '.gz',
+##                    'name': '5kb SNP-Gene Pairs',
+##                    'options': {'displayMode': 'arc', 'color':'purple', 'height': 200},
+##                    'showOnHubLoad': False
+##                 }
+#
+## fivekb_snp_gene_loops_json = {'type': 'longrange',
+##                    'filename': os.path.basename(fivekb_snp_gene_loops_fn) + '.gz',
+##                    'name': '5kb SNP-Gene Loops',
+##                    'options': {'displayMode': 'arc', 'color':'red', 'height': 200},
+##                    'showOnHubLoad': False
+##                 }
+#
+#
+#eqtl_snp_gene_pairs_json = {'type': 'longrange',
+#                 'filename': os.path.basename(eqtl_snp_gene_pairs_fn) + '.gz',
+#                 'name': 'eQTL SNP-Gene Pairs',
+#                 'options': {'displayMode': 'arc', 'color':'purple', 'height': 200},
+#                 'showOnHubLoad': True
+#                }
+#
+#
+#eqtl_snps_only_json = {'type': 'bed',
+#                 'filename': os.path.basename(eqtl_snps_only_fn) + '.gz',
+#                 'name': 'eQTL SNPs only',
+#                 'options': {'color':'purple'},
+#                 'showOnHubLoad': True
+#
+#                }
+#
+#
+#eqtl_genes_only_json = {'type': 'bed',
+#                 'filename': os.path.basename(eqtl_genes_only_fn) + '.gz',
+#                 'name': 'eQTL genes only',
+#                 'options': {'color':'purple'},
+#                 'showOnHubLoad': True
+#                }
+#
+#
+#coloc_snp_gene_pairs_json = {'type': 'longrange',
+#                 'filename': os.path.basename(coloc_snp_gene_pairs_fn) + '.gz',
+#                 'name': 'coloc SNP-Gene Pairs',
+#                 'options': {'displayMode': 'arc', 'color':'purple', 'height': 200},
+#                 'showOnHubLoad': True
+#                }
+#
+#coloc_snp_gene_loops_json = {'type': 'longrange',
+#                 'filename': os.path.basename(coloc_snp_gene_loops_fn) + '.gz',
+#                 'name': 'coloc SNP-Gene Loops',
+#                 'options': {'displayMode': 'arc', 'color':'red', 'height': 200},
+#                 'showOnHubLoad': True
+#                }
+#
+#coloc_snps_only_json = {'type': 'bed',
+#                 'filename': os.path.basename(coloc_snps_only_fn) + '.gz',
+#                 'name': 'coloc SNPs only',
+#                 'options': {'color':'purple'},
+#                 'showOnHubLoad': False
+#                }
+#
+#
+#coloc_genes_only_json = {'type': 'bed',
+#                 'filename': os.path.basename(coloc_genes_only_fn) + '.gz',
+#                 'name': 'coloc genes only',
+#                 'options': {'color':'purple'},
+#                 'showOnHubLoad': False
+#                }
+#
+#
+#coloc_anchors_only_json = {'type': 'bed',
+#                 'filename': os.path.basename(coloc_anchors_fn) + '.gz',
+#                 'name': 'coloc loop anchors only',
+#                 'options': {'color':'red'},
+#                 'showOnHubLoad': False
+#                }
+#
+#
+##hub_json = [orig_loops_json, sg_pairs_json, sg_loops_json, sg_snps_json, sg_genes_json]
+#hub_json = [gene_refbed_json, 
+#            #fivekb_snp_gene_pairs_json,
+#            #fivekb_snp_gene_loops_json,
+#            eqtl_snps_only_json,
+#            eqtl_genes_only_json,
+#            eqtl_snp_gene_pairs_json,
+#            coloc_snps_only_json,
+#            coloc_genes_only_json,
+#            coloc_snp_gene_pairs_json, 
+#            coloc_anchors_only_json,
+#            coloc_snp_gene_loops_json,
+#            orig_loops_json, 
+#           ]
+#
+#hub_json_fn = os.path.join(outdir, 'hub.config.json')
+#with open(hub_json_fn, 'w') as f:
+#    f.write(json.dumps(hub_json, indent=4))
