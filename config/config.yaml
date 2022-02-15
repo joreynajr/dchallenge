@@ -1,3 +1,4 @@
+hichip_db_py: "/mnt/BioHome/jreyna/software/anaconda3/hichip-db/bin/python"
 hic_tls_py: "/mnt/BioHome/jreyna/software/anaconda3/envs/hic_tls/bin/python"
 hic_tls_R: "/share/apps/R/3.4.3/lib64/R/bin/Rscript"
 R4: "/mnt/BioHome/jreyna/R-Versions/R-4.0.3/bin/Rscript"
@@ -19,3 +20,4 @@ mustache_python: "/mnt/BioHome/jreyna/software/anaconda3/envs/mustache/bin/pytho
 juicer_tools_1.13.02: "/home/jreyna/software/juicer_tools_1.13.02.jar"
 cooler: "/mnt/BioHome/jreyna/software/anaconda3/envs/hic_tls/bin/cooler"
 bgzip: "/mnt/BioHome/jreyna/software/anaconda3/envs/hic_tls/bin/bgzip"
+liftover: "/home/jreyna/software/UCSC_Browser_Tools/liftOver"
