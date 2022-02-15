@@ -2,3 +2,5 @@
 *Rhistory
 results
 *.ipynb_checkpoints
+.snakemake
+scripts/coloc/qjobs/
