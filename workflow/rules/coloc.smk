@@ -152,7 +152,7 @@ rule processing_eqtl_catalog_with_complete_fields: # (status: running)
     params:
         interm='results/main/eqtl/{eqtl_source}/ge/{eqtl_source}_ge_{ge_source}.all.dist.fdr.input.tsv'
     log: 
-        'results/main/coloc/Results/Colocalization/eQTL_Cat/logs/parse_eqtl_catalog_with_complete_fields.{eqtl_source}.{ge_source}.log'
+        'results/main/coloc/Results/eQTL_Catalogue/logs/parse_eqtl_catalog_with_complete_fields.{eqtl_source}.{ge_source}.log'
     resources:
         mem_mb = 12000,
         nodes = 1,
@@ -179,9 +179,9 @@ rule run_colocalization_eqtl_catalog: #(Status: running)
         gwas = 'results/main/coloc/Data/T1D_GWAS/{gwas_source}/GRCh38/GWAS_input_colocalization_pval_lt_5eMinus8.GRCh38.txt',
         eqtl = rules.processing_eqtl_catalog_with_complete_fields.output
     output:
-        outdir = directory('results/main/coloc/Results/Colocalization/eQTL_Cat/{gwas_source}/{eqtl_source}/{ge_source}/')
+        outdir = directory('results/main/coloc/Results/eQTL_Catalogue/{gwas_source}/{eqtl_source}/{ge_source}/')
     log: 
-        'results/main/coloc/Results/Colocalization/eQTL_Cat/logs/run_colocalization_eqtl_catalog.{gwas_source}.{eqtl_source}.{ge_source}.log'
+        'results/main/coloc/Results/eQTL_Catalogue/logs/run_colocalization_eqtl_catalog.{gwas_source}.{eqtl_source}.{ge_source}.log'
     params:
         chr = 1,
         pos = 2,
@@ -263,7 +263,7 @@ rule calculate_number_of_eqtls_pre_filtering: # (Status: running)
 #    params:
 #        interm='results/main/eqtl/{eqtl_source}/ge/{eqtl_source}_ge_{ge_source}.all.complete_fields.input.tsv'
 #    log: 
-#        'results/main/coloc/Results/Colocalization/eQTL_Cat_FDR/logs/parse_eqtl_catalog_with_complete_fields.{eqtl_source}.{ge_source}.log'
+#        'results/main/coloc/Results/eQTL_Catalogue_FDR/logs/parse_eqtl_catalog_with_complete_fields.{eqtl_source}.{ge_source}.log'
 #    resources:
 #        mem_mb = 12000,
 #        nodes = 1,
@@ -301,9 +301,9 @@ rule calculate_number_of_eqtls_pre_filtering: # (Status: running)
 #        gwas = 'results/main/coloc/Data/T1D_GWAS/{gwas_source}/GRCh38/GWAS_input_colocalization_pval_lt_5eMinus8.GRCh38.txt',
 #        eqtl = rules.processing_eqtl_catalog_with_complete_fields.output
 #    output:
-#        outdir = directory('results/main/coloc/Results/Colocalization/eQTL_Cat_FDR/{gwas_source}/{eqtl_source}/{ge_source}/')
+#        outdir = directory('results/main/coloc/Results/eQTL_Catalogue_FDR/{gwas_source}/{eqtl_source}/{ge_source}/')
 #    log: 
-#        'results/main/coloc/Results/Colocalization/eQTL_Cat/logs/run_colocalization_eqtl_catalog.{gwas_source}.{eqtl_source}.{ge_source}.log'
+#        'results/main/coloc/Results/eQTL_Catalogue_FDR/logs/run_colocalization_eqtl_catalog.{gwas_source}.{eqtl_source}.{ge_source}.log'
 #    params:
 #        chr = 1,
 #        pos = 2,
@@ -357,7 +357,7 @@ rule calculate_number_of_eqtls_pre_filtering: # (Status: running)
 #    output:
 #        'results/main/eqtl/ImmuNexUT/ge/ImmuNexUT_ge_{ge_source}.all.immunenexut_pre.tsv'
 #    log: 
-#        'results/main/coloc/Results/Colocalization/ImmuNexUT_FDR/logs/parse_immunexut_eqtl.ImmuNexUT.{ge_source}.log'
+#        'results/main/coloc/Results/ImmuNexUT_FDR/logs/parse_immunexut_eqtl.ImmuNexUT.{ge_source}.log'
 #    shell:
 #        r'''
 #            echo "chr	pos	genename	dist	slope	pval" > {output}
@@ -431,7 +431,7 @@ rule calculate_number_of_eqtls_pre_filtering: # (Status: running)
 #    params:
 #        interm='results/main/eqtl/{eqtl_source}/ge/{eqtl_source}_ge_{ge_source}.all.immunexut.complete_fields.input.tsv'
 #    log: 
-#        'results/main/coloc/Results/Colocalization_ImmuNexUT/logs/parse_eqtl_catalog_with_complete_fields.{eqtl_source}.{ge_source}.log'
+#        'results/main/coloc/Results/ImmuNexUT/logs/parse_eqtl_catalog_with_complete_fields.{eqtl_source}.{ge_source}.log'
 #    resources:
 #        mem_mb = 12000,
 #        nodes = 1,
@@ -453,9 +453,9 @@ rule calculate_number_of_eqtls_pre_filtering: # (Status: running)
 #        gwas = 'results/main/coloc/Data/T1D_GWAS/{gwas_source}/GRCh38/GWAS_input_colocalization_pval_lt_5eMinus8.GRCh38.txt',
 #        eqtl = rules.processing_immunexut_with_complete_fields.output
 #    output:
-#        outdir = directory('results/main/coloc/Results/Colocalization_ImmuNexUT/{gwas_source}/{eqtl_source}/{ge_source}/')
+#        outdir = directory('results/main/coloc/Results/ImmuNexUT/{gwas_source}/{eqtl_source}/{ge_source}/')
 #    log: 
-#        'results/main/coloc/Results/Colocalization_ImmuNexUT/logs/run_colocalization_eqtl_catalog.{gwas_source}.{eqtl_source}.{ge_source}.log'
+#        'results/main/coloc/Results/ImmuNexUT/logs/run_colocalization_eqtl_catalog.{gwas_source}.{eqtl_source}.{ge_source}.log'
 #    params:
 #        chr = 1,
 #        pos = 2,
@@ -472,9 +472,9 @@ rule calculate_number_of_eqtls_pre_filtering: # (Status: running)
 #        gwas = 'results/main/coloc/Data/T1D_GWAS/{gwas_source}/GRCh38/GWAS_input_colocalization_pval_lt_5eMinus8.GRCh38.txt',
 #        eqtl = rules.processing_immunexut_with_complete_fields.output
 #    output:
-#        outdir = directory('results/main/coloc/Results/Colocalization_ImmuNexUT_FDR/{gwas_source}/{eqtl_source}/{ge_source}/')
+#        outdir = directory('results/main/coloc/Results/ImmuNexUT_FDR/{gwas_source}/{eqtl_source}/{ge_source}/')
 #    log: 
-#        'results/main/coloc/Results/Colocalization_FDR_ImmuNexUT_FDR/logs/run_colocalization_eqtl_catalog.{gwas_source}.{eqtl_source}.{ge_source}.log'
+#        'results/main/coloc/Results/ImmuNexUT_FDR/logs/run_colocalization_eqtl_catalog.{gwas_source}.{eqtl_source}.{ge_source}.log'
 #
 #
 ## This file doesn not contain a chr and position field, rather it has a 
@@ -489,7 +489,7 @@ rule calculate_number_of_eqtls_pre_filtering: # (Status: running)
 #        interm1 = 'results/main/coloc/Data/eqtl_sqtl_summ_stats/{eqtl_source}/{ge_source}.interm1.txt',
 #        interm2 = 'results/main/coloc/Data/eqtl_sqtl_summ_stats/{eqtl_source}/{ge_source}.interm2.txt'
 #    log: 
-#        'results/main/coloc/Results/Colocalization/ImmuNexUT/logs/parse_mu_et_al_eqtl.{eqtl_source}.{ge_source}.log'
+#        'results/main/coloc/Results/ImmuNexUT/logs/parse_mu_et_al_eqtl.{eqtl_source}.{ge_source}.log'
 #    shell:
 #        r'''
 #            zcat {input} > {params.unzipped}
@@ -516,7 +516,7 @@ rule calculate_number_of_eqtls_pre_filtering: # (Status: running)
 #        interm1 = 'results/main/coloc/Data/eqtl_sqtl_summ_stats/{eqtl_source}/{ge_source}.interm1.txt',
 #        interm2 = 'results/main/coloc/Data/eqtl_sqtl_summ_stats/{eqtl_source}/{ge_source}.interm2.txt'
 #    log: 
-#        'results/main/coloc/Results/Colocalization/Mu_et_al/logs/parse_mu_et_al_eqtl.{eqtl_source}.{ge_source}.log'
+#        'results/main/coloc/Results/Mu_et_al/logs/parse_mu_et_al_eqtl.{eqtl_source}.{ge_source}.log'
 #    shell:
 #        r'''
 #            zcat {input} > {params.unzipped}
@@ -535,9 +535,9 @@ rule calculate_number_of_eqtls_pre_filtering: # (Status: running)
 #        gwas = 'results/main/coloc/Data/T1D_GWAS/{gwas_source}/GRCh38/GWAS_input_colocalization_pval_lt_5eMinus8.GRCh38.txt',
 #        eqtl = 'results/main/coloc/Data/eqtl_sqtl_summ_stats/{eqtl_source}/{ge_source}.input.txt'
 #    output:
-#        outdir = directory('results/main/coloc/Results/Colocalization/Mu_et_al/{gwas_source}/{eqtl_source}/{ge_source}/')
+#        outdir = directory('results/main/coloc/Results/Mu_et_al/{gwas_source}/{eqtl_source}/{ge_source}/')
 #    log: 
-#        'results/main/coloc/Results/Colocalization/Mu_et_al/logs/run_colocalization_mu_et_al_example.{gwas_source}.{eqtl_source}.{ge_source}.log'
+#        'results/main/coloc/Results/Mu_et_al/logs/run_colocalization_mu_et_al_example.{gwas_source}.{eqtl_source}.{ge_source}.log'
 #    params:
 #        chr = 1,
 #        pos = 2,
