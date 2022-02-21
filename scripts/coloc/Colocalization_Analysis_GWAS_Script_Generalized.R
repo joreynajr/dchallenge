@@ -125,18 +125,31 @@ if (ncol(GWAS_Data) == 6) {
 }
 outtext <- paste0("\n *** Number of reference GWAS SNPs: ", nrow(GWAS_Data))
 cat(outtext, file=textfile, append=TRUE, sep="\n")
+##=====================
+## load the eQTL data for this chromosome
+##=====================
+print("## process the eQTL data for this chromosome")
+## parsing the eQTL data according to commandline specified columns 
+Ref_eQTL_Data <- data.table::fread(RefEQTLFile, select=eqtl_cols, header=params$eqtl_header)
+
+print("## process the eQTL data for this chromosome")
+## parsing the eQTL data according to commandline specified columns 
+Ref_eQTL_Data <- data.table::fread(RefEQTLFile, select=eqtl_cols, header=params$eqtl_header)
+
+#print("Printing the Ref_eQTL_Data.")
+#print(head(Ref_eQTL_Data))
 
 ##=== divide the genome into a fixed set of loci
 ##=== lead variant: 500 Kb region on both side (1 Mb locus)
 ##=== split the genome into fixed set of loci
-
 GWASChrList <- as.vector(unique(GWAS_Data[,1]))
 for (chridx in 1:length(GWASChrList)) {
 
 	currchr <- GWASChrList[chridx]	
 	GWAS_Data_currchr <- GWAS_Data[which(GWAS_Data[,1] == currchr), ]
-	
-	outtext <- paste0("\n\n\n *********** \n ==>> processing GWAS chromosome : ", currchr, "\n number of GWAS SNP entries for this chromosome : ", nrow(GWAS_Data_currchr), "\n ****************")
+	outtext <- paste0("\n\n\n *********** \n ==>> processing GWAS chromosome : ", currchr,
+                      "\n number of GWAS SNP entries for this chromosome : ", nrow(GWAS_Data_currchr),
+                      "\n ****************")
 	cat(outtext, file=textfile, append=TRUE, sep="\n")
 
     # setting the file name for each dumped chromosome
@@ -145,21 +158,14 @@ for (chridx in 1:length(GWASChrList)) {
 	##=====================
 	## process the eQTL data for this chromosome
 	##=====================
-	print("## process the eQTL data for this chromosome")
-	## parsing the eQTL data according to commandline specified columns 
-	Ref_eQTL_Data <- data.table::fread(RefEQTLFile, select=eqtl_cols, header=params$eqtl_header)
-
-	#print("Printing the Ref_eQTL_Data.")
-	#print(head(Ref_eQTL_Data))
-
-	dump_Ref_eQTL_Data <- Ref_eQTL_Data [, eqtl_cols]
+	dump_Ref_eQTL_Data <- copy(Ref_eQTL_Data)
 
     ## adding FDR data when available
     #print("# adding FDR data when available")
 	#dump_Ref_eQTL_Data['FDR'] = NA
-    #if (!is.null(params$eqtl_fdr)){
-    #    dump_Ref_eQTL_Data['FDR'] = Ref_eQTL_Data[, eqtl_fdr] 
-    #}
+    if (!is.null(params$eqtl_fdr)){
+        dump_Ref_eQTL_Data['FDR'] = Ref_eQTL_Data[, eqtl_fdr] 
+    }
     if (is.null(params$eqtl_fdr)){
         dump_Ref_eQTL_Data['FDR'] = NA
     }
@@ -170,7 +176,13 @@ for (chridx in 1:length(GWASChrList)) {
     # adding columns names
     print("# adding columns names")
 	colnames(dump_Ref_eQTL_Data) <- c('chr', 'pos', 'geneName', 'dist', 'slope', 'pvalue', 'FDR')
-    
+
+    # filter dump_Ref so only curr chr is present
+    dump_chrIdx <- which(dump_Ref_eQTL_Data['chr'] == currchr)
+    dump_Ref_eQTL_Data <- dump_Ref_eQTL_Data[dump_chrIdx,]
+
+    print(head(dump_Ref_eQTL_Data))
+
 	outtext <- paste0("\n ******** Number of reference EQTLs for the current chromosome: ", nrow(dump_Ref_eQTL_Data))
 	cat(outtext, file=textfile, append=TRUE, sep="\n")
 	if (nrow(dump_Ref_eQTL_Data) == 0) {
@@ -190,7 +202,10 @@ for (chridx in 1:length(GWASChrList)) {
 	SNPInfoData <- data.table::fread(SNPInfoFile, header=T, sep=" ")	# employ space separator
 	colnames(SNPInfoData) <- c('chr', 'pos', 'variant_id', 'rs_id', 'ref', 'alt', 'AC', 'AF', 'AN')
 	cat(sprintf("\n ===>> after reading SNPInfoData "))
-	outtext <- paste0("\n ==>>> SNP info file (complete SNP set) : ", SNPInfoFile, "\n ==>> Number of SNPs in the reference SNP information file for the current chromosome : ", nrow(SNPInfoData), " number of columns for this reference dataset : ", ncol(SNPInfoData))
+	outtext <- paste0("\n ==>>> SNP info file (complete SNP set) : ",
+                      SNPInfoFile,
+                      "\n ==>> Number of SNPs in the reference SNP information file for the current chromosome : ",
+                      nrow(SNPInfoData), " number of columns for this reference dataset : ", ncol(SNPInfoData))
 	cat(outtext, file=textfile, append=TRUE, sep="\n")	
 
 	##=========== merged eQTL with the reference SNP information
