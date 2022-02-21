@@ -2,7 +2,7 @@
 # Rules to analyze ALL eQTLs (no FDR filtering)
 #########################################################################################
 
-rule liftover_snp_info:
+rule liftover_snp_info: # (Status: running)
     input:
         txt = 'results/refs/coloc_snps_meta/grch37/SNPInfo/snpinfo_chr{chr_num}.txt',
         chain = rules.download_chain_file_hg19tohg38.output
@@ -49,14 +49,9 @@ rule liftover_snp_info:
 
         """
 
-
-
-
-
-
 # This file doesn not contain a chr and position field, rather it has a 
 # sid filed form which you can generated these two.
-rule calculate_dist_col: # (Status: working)
+rule calculate_dist_col: # (Status: running)
     input:
         gencode = 'results/refs/gencode/v30/gencode.v30.annotation.bed',
         eqtl = 'results/main/eqtl/{eqtl_source}/ge/{eqtl_source}_ge_{ge_source}.all.tsv.gz'
@@ -84,7 +79,7 @@ rule calculate_dist_col: # (Status: working)
         '''
 
 # After running calculate_dist_col this rule will add the dist column to the tsv.gz data
-rule add_dist_col: # (Status: working)
+rule add_dist_col: # (Status: running)
     input:
         eqtl = 'results/main/eqtl/{eqtl_source}/ge/{eqtl_source}_ge_{ge_source}.all.tsv.gz',
         dist = rules.calculate_dist_col.output
@@ -115,10 +110,9 @@ rule add_dist_col: # (Status: working)
         '''
 
 
-
 # This file doesn not contain a chr and position field, rather it has a 
 # sid filed form which you can generated these two.
-rule parse_eqtl_catalog_with_dist: # (Status: working)
+rule parse_eqtl_catalog_with_dist: # (Status: running)
     input:
         rules.add_dist_col.output
     output:
@@ -142,7 +136,67 @@ rule parse_eqtl_catalog_with_dist: # (Status: working)
         '''
 
 
-rule run_colocalization_eqtl_catalog: #(Status: working)
+# This file doesn not contain a chr and position field, rather it has a 
+# sid field form which you can generated these two.
+rule calculate_fdr_col: # (Status: running)
+    input:
+        eqtl = 'results/main/eqtl/{eqtl_source}/ge/{eqtl_source}_ge_{ge_source}.all.tsv.gz'
+    output:
+        'results/main/eqtl/{eqtl_source}/ge/{eqtl_source}_ge_{ge_source}.all.fdr.txt'
+    log: 
+        'results/main/eqtl/logs/calculate_fdr_col.{eqtl_source}.{ge_source}.log'
+    params:
+        pval = 9
+    resources:
+        mem_mb = 24000,
+        nodes = 1,
+        ppn = 1,
+    shell:
+        r'''
+            /mnt/BioHome/jreyna/software/anaconda3/envs/hic_tls/bin/python 
+                        workflow/scripts/eqtl/Calc_FDR_Col.py \
+                        --in-header \
+                        --out-header \
+                        {input} \
+                        {output} \
+                        9 >> {log} 2>&1
+        '''
+
+
+# After running calculate_dist_col this rule will add the dist column to the tsv.gz data
+rule add_missing_cols: #(Status: running)
+    input:
+        eqtl = 'results/main/eqtl/{eqtl_source}/ge/{eqtl_source}_ge_{ge_source}.all.tsv.gz',
+        dist = rules.calculate_dist_col.output,
+        fdr = rules.calculate_fdr_col.output
+    params:
+        interm1 = 'results/main/eqtl/{eqtl_source}/ge/{eqtl_source}_ge_{ge_source}.all.temp.tsv',
+        interm2 = 'results/main/eqtl/{eqtl_source}/ge/{eqtl_source}_ge_{ge_source}.all.complete_fields.tsv'
+    output:
+        'results/main/eqtl/{eqtl_source}/ge/{eqtl_source}_ge_{ge_source}.all.complete_fields.tsv.gz'
+    log: 
+        'results/main/eqtl/logs/add_missing_cols.{eqtl_source}.{ge_source}.log'
+    resources:
+        mem_mb = 32000,
+        nodes = 1,
+        ppn = 1,
+    shell:
+        r'''
+            echo "running gzip" >> {log} 2>&1
+            gzip -cd {input.eqtl} > {params.interm1} 2>> {log}
+
+            echo "running paste" >> {log} 2>&1
+            paste {params.interm1} {input.dist} {input.fdr} | tr -d '\r' > {params.interm2} 2>> {log}
+
+            echo "running bgzip" >> {log} 2>&1
+            {config[bgzip]} {params.interm2} 2>> {log}
+
+            echo "running rm" >> {log} 2>&1
+            rm {params.interm1} 2>> {log}
+        '''
+
+
+rule run_colocalization_eqtl_catalog: #(Status: running)
     input:
         snp_info_dir = 'results/refs/coloc_snps_meta/grch38/SNPInfo/',
         gwas = 'results/main/coloc/Data/T1D_GWAS/{gwas_source}/GRCh38/GWAS_input_colocalization_pval_lt_5eMinus8.GRCh38.txt',
@@ -206,7 +260,7 @@ rule run_colocalization_eqtl_catalog: #(Status: working)
 # Rules to analyze significant eQTLs (yes FDR filtering)
 #########################################################################################
 
-rule calculate_number_of_eqtls_pre_filtering: # (Status: developing)
+rule calculate_number_of_eqtls_pre_filtering: # (Status: running)
     input:
         eqtl = 'results/main/eqtl/{eqtl_source}/ge/{eqtl_source}_ge_{ge_source}.all.tsv.gz'
     output:
@@ -222,64 +276,6 @@ rule calculate_number_of_eqtls_pre_filtering: # (Status: developing)
             zcat {input} | wc -l  > {output} 2> {log}
         '''
 
-# This file doesn not contain a chr and position field, rather it has a 
-# sid field form which you can generated these two.
-rule calculate_fdr_col: # (Status: working)
-    input:
-        eqtl = 'results/main/eqtl/{eqtl_source}/ge/{eqtl_source}_ge_{ge_source}.all.tsv.gz'
-    output:
-        'results/main/eqtl/{eqtl_source}/ge/{eqtl_source}_ge_{ge_source}.all.fdr.txt'
-    log: 
-        'results/main/eqtl/logs/calculate_fdr_col.{eqtl_source}.{ge_source}.log'
-    params:
-        pval = 9
-    resources:
-        mem_mb = 24000,
-        nodes = 1,
-        ppn = 1,
-    shell:
-        r'''
-            /mnt/BioHome/jreyna/software/anaconda3/envs/hic_tls/bin/python 
-                        workflow/scripts/eqtl/Calc_FDR_Col.py \
-                        --in-header \
-                        --out-header \
-                        {input} \
-                        {output} \
-                        9 >> {log} 2>&1
-        '''
-
-
-# After running calculate_dist_col this rule will add the dist column to the tsv.gz data
-rule add_missing_cols: #(Status: working)
-    input:
-        eqtl = 'results/main/eqtl/{eqtl_source}/ge/{eqtl_source}_ge_{ge_source}.all.tsv.gz',
-        dist = rules.calculate_dist_col.output,
-        fdr = rules.calculate_fdr_col.output
-    params:
-        interm1 = 'results/main/eqtl/{eqtl_source}/ge/{eqtl_source}_ge_{ge_source}.all.temp.tsv',
-        interm2 = 'results/main/eqtl/{eqtl_source}/ge/{eqtl_source}_ge_{ge_source}.all.complete_fields.tsv'
-    output:
-        'results/main/eqtl/{eqtl_source}/ge/{eqtl_source}_ge_{ge_source}.all.complete_fields.tsv.gz'
-    log: 
-        'results/main/eqtl/logs/add_missing_cols.{eqtl_source}.{ge_source}.log'
-    resources:
-        mem_mb = 32000,
-        nodes = 1,
-        ppn = 1,
-    shell:
-        r'''
-            echo "running gzip" >> {log} 2>&1
-            gzip -cd {input.eqtl} > {params.interm1} 2>> {log}
-
-            echo "running paste" >> {log} 2>&1
-            paste {params.interm1} {input.dist} {input.fdr} | tr -d '\r' > {params.interm2} 2>> {log}
-
-            echo "running bgzip" >> {log} 2>&1
-            {config[bgzip]} {params.interm2} 2>> {log}
-
-            echo "running rm" >> {log} 2>&1
-            rm {params.interm1} 2>> {log}
-        '''
 
 
 # This file doesn not contain a chr and position field, rather it has a 
@@ -308,6 +304,21 @@ rule processing_eqtl_catalog_with_complete_fields: # (status: running)
         '''
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# count the number of eqtl after filtering with FDR
 rule calculate_number_of_eqtls_post_filtering: # (Status: running)
     input:
         eqtl = rules.processing_eqtl_catalog_with_complete_fields.output
@@ -325,6 +336,7 @@ rule calculate_number_of_eqtls_post_filtering: # (Status: running)
         '''
 
 
+# run colocalization with eqtls which are significant (filter on FDR < 0.05)
 rule run_colocalization_eqtl_catalog_with_fdr_filtering:
     input:
         gwas = 'results/main/coloc/Data/T1D_GWAS/{gwas_source}/GRCh38/GWAS_input_colocalization_pval_lt_5eMinus8.GRCh38.txt',
@@ -372,6 +384,13 @@ rule run_colocalization_eqtl_catalog_with_fdr_filtering:
                                 {input.eqtl} \
                                 {output.outdir} >> {log} 2>&1
         """
+
+
+
+
+
+
+
 
 
 #########################################################################################
