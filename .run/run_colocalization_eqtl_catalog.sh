@@ -37,10 +37,10 @@ fns=""
 while IFN= read -r line;
 do
     run_info=($line)
-    fn="results/main/coloc/Results/Colocalization_SMKN/${run_info[0]}/${run_info[1]}/${run_info[2]}/"
+    fn="results/main/coloc/Results/eQTL_Catalogue/${run_info[0]}/${run_info[1]}/${run_info[2]}/"
     fns+="$fn "
 
-done < <(sed '1d' config/coloc_samplesheets/t1d.samplesheet.tsv | grep -v "^#" | head -n 1)
+done < <(sed '1d' config/coloc_samplesheets/t1d.samplesheet.tsv | grep -v "^#" | head -n 100)
 echo $fns
 
 #outfiles=$(echo $outfiles | cut -d " " -f 4)
@@ -49,11 +49,16 @@ echo $fns
 #echo "outfiles: $outfiles"
 #echo "####################################################################################"
 
-##snakemake --profile workflow/profiles/pbs-torque/ -n $outfiles
-snakemake --profile workflow/profiles/pbs-torque/ $@ $fns
-#snakemake --profile workflow/profiles/local/ $@ $fns
-#echo "snakemake --profile workflow/profiles/local/ $@ $outfiles"
+# TEST Example 
+#snakemake --profile workflow/profiles/pbs-torque $@ results/main/coloc/Results/eQTL_Catalogue/T1D_34012112_Gaulton/Schmiedel_2018/test
+#snakemake --profile workflow/profiles/local $@ results/main/coloc/Results/eQTL_Catalogue/T1D_34012112_Gaulton/Schmiedel_2018/test
 
-# ad hoc re-run of NK-cells
+# AD HOC re-run of NK-cells
 #new_fn="results/main/coloc/Results/Colocalization_SMKN/T1D_34012112_Gaulton/Schmiedel_2018/NK-cell_naive/"
 #snakemake --profile workflow/profiles/pbs-torque/ $@ $new_fn
+new_fn="results/main/coloc/Results/eQTL_Catalogue/T1D_34012112_Gaulton/Schmiedel_2018/CD8_T-cell_anti-CD3-CD28"
+snakemake --profile workflow/profiles/pbs-torque/ $@ $new_fn
+
+# FULL Run
+#snakemake --profile workflow/profiles/pbs-torque/ $@ $fns
+#snakemake --profile workflow/profiles/local/ $@ $fns

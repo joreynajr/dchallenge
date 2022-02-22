@@ -29,13 +29,16 @@ parser$add_argument('eqtl', type='character')
 parser$add_argument('outdir', type='character')
 params <- parser$parse_args()
 
+#print(paste('params$eqtl_FDR:', params$eqtl_FDR))
+#print(paste('null-test:', is.null(params$eqtl_FDR)))
+
 # compiling the eqtl columns
-if (is.null(params$eqtl_fdr)){
+if (is.null(params$eqtl_FDR)){
     eqtl_cols = c(params$eqtl_chr, params$eqtl_pos, params$eqtl_geneName,
                   params$eqtl_dist, params$eqtl_slope, params$eqtl_pvalue)
 } else{
     eqtl_cols = c(params$eqtl_chr, params$eqtl_pos, params$eqtl_geneName,
-                  params$eqtl_dist, params$eqtl_slope, params$eqtl_pvalue, params$eqtl_fdr)
+                  params$eqtl_dist, params$eqtl_slope, params$eqtl_pvalue, params$eqtl_FDR)
 }
 
 options(scipen = 10)
@@ -125,13 +128,10 @@ if (ncol(GWAS_Data) == 6) {
 }
 outtext <- paste0("\n *** Number of reference GWAS SNPs: ", nrow(GWAS_Data))
 cat(outtext, file=textfile, append=TRUE, sep="\n")
+
 ##=====================
 ## load the eQTL data for this chromosome
 ##=====================
-print("## process the eQTL data for this chromosome")
-## parsing the eQTL data according to commandline specified columns 
-Ref_eQTL_Data <- data.table::fread(RefEQTLFile, select=eqtl_cols, header=params$eqtl_header)
-
 print("## process the eQTL data for this chromosome")
 ## parsing the eQTL data according to commandline specified columns 
 Ref_eQTL_Data <- data.table::fread(RefEQTLFile, select=eqtl_cols, header=params$eqtl_header)

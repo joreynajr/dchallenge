@@ -99,7 +99,7 @@ rule calculate_fdr_col: # (Status: running)
         ppn = 1,
     shell:
         r'''
-            /mnt/BioHome/jreyna/software/anaconda3/envs/hic_tls/bin/python 
+            /mnt/BioHome/jreyna/software/anaconda3/envs/hic_tls/bin/python \
                         workflow/scripts/eqtl/Calc_FDR_Col.py \
                         --in-header \
                         --out-header \
@@ -189,7 +189,7 @@ rule run_colocalization_eqtl_catalog: #(Status: running)
         dist = 4,
         slope = 5,
         pvalue = 6,
-        fdr = "NULL",
+        fdr = 7,
         header = 'FALSE'
     resources:
         mem_mb = 48000,
@@ -209,13 +209,15 @@ rule run_colocalization_eqtl_catalog: #(Status: running)
             # run colocalization command
             # omitting --eqtl-FDR {params.fdr} since eQTL Catalog doesn't have FDR/qvalue
             # Omitting --eqtl-header {params.header} since header was removed previously
-            Rscript scripts/coloc/Colocalization_Analysis_GWAS_Script_Generalized.R \
+            #Rscript scripts/coloc/Colocalization_Analysis_GWAS_Script_Generalized.R \
+            Rscript workflow/scripts/coloc/Colocalization_Analysis_GWAS_Script_Generalized.Sourya_Mod.20220221.R \
                                 --eqtl-chr {params.chr} \
                                 --eqtl-pos {params.pos} \
                                 --eqtl-geneName {params.gene_name} \
                                 --eqtl-dist {params.dist} \
                                 --eqtl-slope {params.slope} \
                                 --eqtl-pvalue {params.pvalue} \
+                                --eqtl-FDR {params.fdr} \
                                 {input.snp_info_dir} \
                                 {input.gwas} \
                                 {input.eqtl} \
