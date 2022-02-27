@@ -1,0 +1,48 @@
+Fine mapping pipeline (Uses FINEMAP)
+------------------------------------
+
+## consolidated pipeline
+
+edit the "configfile"
+then run "Finemap_Script.sh"
+
+
+
+## step-wise pipeline (now provided under backup_scripts folder)
+## not required but still mentioned
+
+Step 1
+----------
+
+Extract_GWAS_Regions.R and Extract_GWAS_Regions.sh
+
+Script to extract the GWAS significant regions (3 Mb around a variant)
+and divide the significant GWAS entries per region
+
+Step 2
+--------
+
+Run_LDStore.R and Run_LDStore.sh
+
+Using the input GWAS summary statistics and the PLINK formatted genotype data
+run LDStore2 for LD estimation.
+
+
+Step 3
+--------
+
+Run_FINEMAP.sh
+
+Run FINEMAP using both --cond and --sss options
+
+
+Step 4
+--------
+
+Summary_FINEMAP_Output.R and Summary_FINEMAP_Output.sh
+
+Summary of FINEMAP results - consolidated for all regions
+for both --cond and --sss options
+
+
+

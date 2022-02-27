@@ -8,8 +8,10 @@
 configfile:'config/config.yaml'
 #report:'report/workflow.rst'
 
+include: 'rules/wrappers.smk'
 include: 'rules/refs.smk'
+include: 'rules/gwas.smk'
 include: 'rules/coloc.smk'
 include: 'rules/sgls.smk'
-include: 'rules/wrappers.smk'
-include: 'rules/gwas.smk'
+include: 'rules/ldpairs.smk'
+include: 'rules/finemapping.smk'
