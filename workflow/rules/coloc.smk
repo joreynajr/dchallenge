@@ -176,7 +176,7 @@ rule processing_eqtl_catalog_with_complete_fields: # (status: running)
 rule run_colocalization_eqtl_catalog: #(Status: running)
     input:
         snp_info_dir = 'results/refs/coloc_snps_meta/grch38/SNPInfo/',
-        gwas = 'results/main/coloc/Data/T1D_GWAS/{gwas_source}/GRCh38/GWAS_input_colocalization_pval_lt_5eMinus8.GRCh38.txt',
+        gwas = rules.liftover_grch37_to_38_gwas_summary_stats.output,
         eqtl = rules.processing_eqtl_catalog_with_complete_fields.output
     output:
         outdir = directory('results/main/coloc/Results/eQTL_Catalogue/{gwas_source}/{eqtl_source}/{ge_source}/')
@@ -300,7 +300,7 @@ rule calculate_number_of_eqtls_pre_filtering: # (Status: running)
 ## run colocalization with eqtls which are significant (filter on FDR < 0.05)
 #rule run_colocalization_eqtl_catalog_with_eqtl_fdr_filtering:
 #    input:
-#        gwas = 'results/main/coloc/Data/T1D_GWAS/{gwas_source}/GRCh38/GWAS_input_colocalization_pval_lt_5eMinus8.GRCh38.txt',
+#        gwas = 'results/main/coloc/Data/T1D_GWAS/{gwas_source}/GRCh38/GWAS_input_colocalization_pval_lt_5eMinus8.txt',
 #        eqtl = rules.processing_eqtl_catalog_with_complete_fields.output
 #    output:
 #        outdir = directory('results/main/coloc/Results/eQTL_Catalogue_FDR/{gwas_source}/{eqtl_source}/{ge_source}/')
@@ -452,7 +452,7 @@ rule calculate_number_of_eqtls_pre_filtering: # (Status: running)
 #
 #use rule run_colocalization_eqtl_catalog as run_colocalization_eqtl_catalog_immunexut with: # (Status: developing)
 #    input:
-#        gwas = 'results/main/coloc/Data/T1D_GWAS/{gwas_source}/GRCh38/GWAS_input_colocalization_pval_lt_5eMinus8.GRCh38.txt',
+#        gwas = 'results/main/coloc/Data/T1D_GWAS/{gwas_source}/GRCh38/GWAS_input_colocalization_pval_lt_5eMinus8.txt',
 #        eqtl = rules.processing_immunexut_with_complete_fields.output
 #    output:
 #        outdir = directory('results/main/coloc/Results/ImmuNexUT/{gwas_source}/{eqtl_source}/{ge_source}/')
@@ -471,7 +471,7 @@ rule calculate_number_of_eqtls_pre_filtering: # (Status: running)
 #
 #use rule run_colocalization_eqtl_catalog_with_fdr_filtering as run_colocalization_eqtl_catalog_with_fdr_filtering_immunexut with:
 #    input:
-#        gwas = 'results/main/coloc/Data/T1D_GWAS/{gwas_source}/GRCh38/GWAS_input_colocalization_pval_lt_5eMinus8.GRCh38.txt',
+#        gwas = 'results/main/coloc/Data/T1D_GWAS/{gwas_source}/GRCh38/GWAS_input_colocalization_pval_lt_5eMinus8.txt',
 #        eqtl = rules.processing_immunexut_with_complete_fields.output
 #    output:
 #        outdir = directory('results/main/coloc/Results/ImmuNexUT_FDR/{gwas_source}/{eqtl_source}/{ge_source}/')
@@ -534,7 +534,7 @@ rule calculate_number_of_eqtls_pre_filtering: # (Status: running)
 ##rules.parse_mu_et_al_eqtl.output:
 #rule run_colocalization_mu_et_al: # (Status: developing)
 #    input:
-#        gwas = 'results/main/coloc/Data/T1D_GWAS/{gwas_source}/GRCh38/GWAS_input_colocalization_pval_lt_5eMinus8.GRCh38.txt',
+#        gwas = 'results/main/coloc/Data/T1D_GWAS/{gwas_source}/GRCh38/GWAS_input_colocalization_pval_lt_5eMinus8.txt',
 #        eqtl = 'results/main/coloc/Data/eqtl_sqtl_summ_stats/{eqtl_source}/{ge_source}.input.txt'
 #    output:
 #        outdir = directory('results/main/coloc/Results/Mu_et_al/{gwas_source}/{eqtl_source}/{ge_source}/')

@@ -1,3 +1,4 @@
+# Rename the loop directories for easier access
 #'results/main/2021_Nikhil_eQTL/Data/FitHiChIP_Loops/CD4N/FitHiChIP_S/FitHiChIP.interactions_FitHiC_Q0.01.bed'
 rule rename_loop_dirs: #(Status: running)
     input:
@@ -33,11 +34,14 @@ rule rename_loop_dirs: #(Status: running)
         '''
 
 
+# Filter for eQTLs with colocalizations for annotations purposes
+# Issue: Doesnt seem like I need it because the colocalization script takes 
+# care of this now. 
 rule filter_eqtls_using_colocs: #(Status: developing)
     input:
         eqtl = rules.add_missing_cols.output,
         coloc_dir = rules.run_colocalization_eqtl_catalog.output,
-        coloc = 'results/main/coloc/Results/Colocalization_SMKN/{gwas_source}/{eqtl_source}/{ge_source}/FINAL_Summary_Coloc_Gene_SNP_Pairs.bed'
+        coloc = 'results/main/coloc/Results/eQTL_Catalogue/{gwas_source}/{eqtl_source}/{ge_source}/FINAL_Summary_Coloc_Gene_SNP_Pairs.bed'
     output:
         outfn = 'results/main/sgls/{gwas_source}/{eqtl_source}/{ge_source}/eqtls.coloc_filtered.tsv.gz'
     log: 
@@ -51,7 +55,9 @@ rule filter_eqtls_using_colocs: #(Status: developing)
         '''
 
 
-rule liftover_loops_to_GRCh38: #(Status: developing)
+# Liftover loops from GRCh37 to GRCh38
+# Needs and update to use on the start
+rule liftover_loops_to_GRCh38: #(Status: running)
     input:
         loops = 'results/main/h3k27ac_hichip/{loop_source}/FitHiChIP_S/FitHiChIP.interactions_FitHiC_Q0.01.bed',
         chain = rules.download_chain_file_hg19tohg38.output
@@ -104,17 +110,79 @@ rule liftover_loops_to_GRCh38: #(Status: developing)
         '''
 
 
-rule annotate_colocs: #(Status: developing)
+## Annotation for colocalized SNP-Gene pairs using loops
+#rule annotate_colocs: #(Status: developing; in the crosshairs of deprecation)
+#    input:
+#        eqtl = rules.filter_eqtls_using_colocs.output,
+#        coloc_dir = rules.run_colocalization_eqtl_catalog.output,
+#        coloc = 'results/main/coloc/Results/Colocalization_SMKN/{gwas_source}/{eqtl_source}/{ge_source}/FINAL_Summary_Coloc_Gene_SNP_Pairs.bed',
+#        loops = rules.liftover_loops_to_GRCh38.output.loops,
+#        genome_sizes = 'results/refs/hg38/hg38.chrom.sizes',
+#        gencode = 'results/refs/gencode/v30/gencode.v30.annotation.bed'
+#    output:
+#        outdir = directory('results/main/sgls/{gwas_source}/{eqtl_source}/{ge_source}/{loop_source}/')
+#    log: 
+#        'results/main/sgls/logs/annotate_colocs.{gwas_source}.{eqtl_source}.{ge_source}.{loop_source}.log'
+#    params:
+#        loop_slop = 25000
+#    resources:
+#        mem_mb = 24000,
+#        nodes = 1,
+#        ppn = 1,
+#    shell:
+#        r'''
+#            mkdir -p {output} >> {log} 2>&1
+#            {config[hichip_db_py]} workflow/scripts/sgls/Find_SGLs.eQTL_Catalogue_Format.py \
+#                                        {input.eqtl} \
+#                                        {input.coloc} \
+#                                        {input.loops} \
+#                                        {wildcards.ge_source} \
+#                                        {input.genome_sizes} \
+#                                        {input.gencode} \
+#                                        {params.loop_slop} \
+#                                        {output} >> {log} 2>&1
+#        '''
+
+
+## Annotation for colocalized SNP-Gene pairs using loops
+## and producing a notebook as a log file
+#rule annotate_colocs_notebook: #(Status: developing)
+#    input:
+#        eqtl = rules.filter_eqtls_using_colocs.output,
+#        coloc_dir = rules.run_colocalization_eqtl_catalog.output,
+#        coloc = 'results/main/coloc/Results/eQTL_Catalogue/{gwas_source}/{eqtl_source}/{ge_source}/FINAL_Summary_Coloc_Gene_SNP_Pairs.bed',
+#        loops = rules.liftover_loops_to_GRCh38.output.loops,
+#        genome_sizes = 'results/refs/hg38/hg38.chrom.sizes',
+#        gencode = 'results/refs/gencode/v30/gencode.v30.annotation.bed'
+#    output:
+#        outdir = directory('results/main/sgls/{gwas_source}/{eqtl_source}/{ge_source}/{loop_source}/')
+#    log: 
+#        #notebook='results/main/sgls/logs/annotate_colocs.{gwas_source}.{eqtl_source}.{ge_source}.{loop_source}.ipynb' #not working, JSON Error
+#        'results/main/sgls/logs/annotate_colocs.{gwas_source}.{eqtl_source}.{ge_source}.{loop_source}.log'
+#    params:
+#        loop_slop = 25000
+#    resources:
+#        mem_mb = 24000,
+#        nodes = 1,
+#        ppn = 1,
+#    notebook:
+#            "../scripts/sgls/Find_SGLs.eQTL_Catalogue_Format.v2.py.ipynb"
+
+
+# Annotation for colocalized SNP-Gene pairs using loops
+# and producing a notebook as a log file
+rule annotate_colocs_script: #(Status: developing)
     input:
         eqtl = rules.filter_eqtls_using_colocs.output,
         coloc_dir = rules.run_colocalization_eqtl_catalog.output,
-        coloc = 'results/main/coloc/Results/Colocalization_SMKN/{gwas_source}/{eqtl_source}/{ge_source}/FINAL_Summary_Coloc_Gene_SNP_Pairs.bed',
+        coloc = 'results/main/coloc/Results/eQTL_Catalogue/{gwas_source}/{eqtl_source}/{ge_source}/FINAL_Summary_Coloc_Gene_SNP_Pairs.bed',
         loops = rules.liftover_loops_to_GRCh38.output.loops,
         genome_sizes = 'results/refs/hg38/hg38.chrom.sizes',
         gencode = 'results/refs/gencode/v30/gencode.v30.annotation.bed'
     output:
         outdir = directory('results/main/sgls/{gwas_source}/{eqtl_source}/{ge_source}/{loop_source}/')
     log: 
+        #notebook='results/main/sgls/logs/annotate_colocs.{gwas_source}.{eqtl_source}.{ge_source}.{loop_source}.ipynb' #not working, JSON Error
         'results/main/sgls/logs/annotate_colocs.{gwas_source}.{eqtl_source}.{ge_source}.{loop_source}.log'
     params:
         loop_slop = 25000
@@ -122,46 +190,14 @@ rule annotate_colocs: #(Status: developing)
         mem_mb = 24000,
         nodes = 1,
         ppn = 1,
-    shell:
-        r'''
-            mkdir -p {output} >> {log} 2>&1
-            {config[hichip_db_py]} workflow/scripts/sgls/Find_SGLs.eQTL_Catalogue_Format.py \
-                                        {input.eqtl} \
-                                        {input.coloc} \
-                                        {input.loops} \
-                                        {wildcards.ge_source} \
-                                        {input.genome_sizes} \
-                                        {input.gencode} \
-                                        {params.loop_slop} \
-                                        {output} >> {log} 2>&1
-        '''
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    script:
+            "../scripts/sgls/Find_SGLs.eQTL_Catalogue_Format.v2.py"
 
 
 rule combine_intersections: #(Status: developing)
     output:
-        'results/main/sgls/master/super_master.snp_gene_loop.analysis.tsv'
+        'results/main/sgls/combined/super_master.snp_gene_loop.analysis.tsv'
     log: 
         'results/main/sgls/logs/combine_intersections.log'
     notebook:
-        '../notebooks/reports/Combine_Master_Tables_New_Pipeline2.py.ipynb'
+        '../notebooks/reports/Combine_Master_Tables.py.ipynb'

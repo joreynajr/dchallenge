@@ -2,7 +2,7 @@ rule run_finemapping:
     input:
         'results/main/finemapping/{gwas_source}/{ref_genome}/raw/GWAS_RawData.finemap.input.tsv'
     output:
-        directory('results/main/finemapping/{gwas_source}/{ref_genome}/offset_{offset}/')
+        'results/main/finemapping/{gwas_source}/{ref_genome}/offset_{offset}/Summary/sss/FINAL_top_snp_credible_set.txt'
     params:
         chrcol = 1,
         poscol = 2,
@@ -14,6 +14,8 @@ rule run_finemapping:
         mem_mb = 10000,
         nodes = 1,
         ppn = 8
+    log:
+        'results/main/finemapping/logs/rule_run_finemapping.{gwas_source}.{ref_genome}.offset_{offset}.log'
     shell:
         r'''
             # make a config file
