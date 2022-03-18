@@ -427,17 +427,20 @@ for (chridx in 1:length(GWASChrList)) {
 			merge_SNP_GWAS_Data$snp <- paste0('SNP.', seq(1,nrow(merge_SNP_GWAS_Data)))
 
             print('merge_SNP_GWAS_Data')
-            print(merge_SNP_GWAS_Data)
+            print(head(merge_SNP_GWAS_Data))
 
 			## merge by the fields "snp", "chr", "pos"
-			mergeDF <- dplyr::inner_join(currDF, merge_SNP_GWAS_Data)
+            if (nrow(currDF) > 0){
 
-			if (bool_Coloc_Summary_DF == FALSE) {						
-				SNPSummaryDF <- mergeDF
-				bool_Coloc_Summary_DF <- TRUE
-			} else {
-				SNPSummaryDF <- rbind.data.frame(SNPSummaryDF, mergeDF)
-			}
+                mergeDF <- dplyr::inner_join(currDF, merge_SNP_GWAS_Data)
+
+                if (bool_Coloc_Summary_DF == FALSE) {						
+                    SNPSummaryDF <- mergeDF
+                    bool_Coloc_Summary_DF <- TRUE
+                } else {
+                    SNPSummaryDF <- rbind.data.frame(SNPSummaryDF, mergeDF)
+                }
+            }
 		}
 
 		##===== delete temporary objects
