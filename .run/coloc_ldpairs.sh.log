@@ -1,0 +1,209 @@
+Is it running?
+*******************************************************************************
+Processing T1D_34012112_Gaulton BLUEPRINT monocyte
+*******************************************************************************
+RUNNING: results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs/coloc_ld_snps.txt, running T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/.
+[1] "\n\n**** Commandline Arguments ****"
+[1] "snp-file: results/main/coloc/Results/eQTL_Catalogue/T1D_34012112_Gaulton/BLUEPRINT/monocyte/FINAL_Summary_Coloc_Gene_SNP_Pairs.bed"
+[1] "onekg-dir: /mnt/BioAdHoc/Groups/vd-vijay/Ariel/R24_new/LD-snps-1000G/DupsRemoved/"
+[1] "population-dir: /mnt/BioAdHoc/Groups/vd-vijay/Ariel/R24_new/LD-snps/lists-pops/"
+[1] "snpinfo-dir: /mnt/BioAdHoc/Groups/vd-vijay/sourya/Projects/2020_IQTL_HiChIP/Data/SNPInfo/SNPInfo_merged_tables/"
+[1] "header: TRUE"
+[1] "chr-col: 1"
+[1] "pos-col: 2"
+[1] "workdir: results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs/"
+[1] "# Loading the SNP datasets"
+
+
+=====>> Unique number of snps: 2
+[1] "# Compute the LD"
+[1] "ChrList"
+[1] "chr10" "chr6" 
+
+
+====>> List of chromosomes in the snp data: chr10 chr6 
+
+LD for SNPs - considering chromosome : chr10 [1] "## snp data for this chromosome - nrow: 1"
+[1] "## get the rsID for SNPs from the SNP metadata file"
+    chr      pos
+2 chr10 88287593
+    chr   pos        rsID
+1 chr10 60494 rs568182971
+2 chr10 60515 rs566854205
+3 chr10 60523 rs112920234
+4 chr10 60607 rs552582111
+5 chr10 60684 rs569167217
+[1] "# add RSID information - nrow: 0"
+[1] "Started with 1 SNPs but after merging with RSID there are 0"
+[1] "Cannot proceed with chr10"
+
+
+LD for SNPs - considering chromosome : chr6 [1] "## snp data for this chromosome - nrow: 1"
+[1] "## get the rsID for SNPs from the SNP metadata file"
+   chr    pos
+1 chr6 412802
+   chr   pos        rsID
+1 chr6 63854 rs544586840
+2 chr6 63979 rs561313667
+3 chr6 63980 rs530120680
+4 chr6 73938 rs540888038
+5 chr6 86820 rs531186114
+[1] "# add RSID information - nrow: 1"
+[1] "# compute LD SNPs for the SNPs"
+[1] "/mnt/BioHome/jreyna/software/anaconda3/hichip-db/bin/plink --bfile /mnt/BioAdHoc/Groups/vd-vijay/Ariel/R24_new/LD-snps-1000G/DupsRemoved/chr6.1kg.phase3.v5.rsn --keep  /mnt/BioAdHoc/Groups/vd-vijay/Ariel/R24_new/LD-snps/lists-pops/var-super_pop_pop-AFR.txt --r2 --ld-snp-list results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_list_SNPs.txt --ld-window-kb 1000 --ld-window 999999 --ld-window-r2 0.8 --out results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_snp-pop-AFR"
+PLINK v1.90b6.21 64-bit (19 Oct 2020)          www.cog-genomics.org/plink/1.9/
+(C) 2005-2020 Shaun Purcell, Christopher Chang   GNU General Public License v3
+Logging to results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_snp-pop-AFR.log.
+Options in effect:
+  --bfile /mnt/BioAdHoc/Groups/vd-vijay/Ariel/R24_new/LD-snps-1000G/DupsRemoved/chr6.1kg.phase3.v5.rsn
+  --keep /mnt/BioAdHoc/Groups/vd-vijay/Ariel/R24_new/LD-snps/lists-pops/var-super_pop_pop-AFR.txt
+  --ld-snp-list results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_list_SNPs.txt
+  --ld-window 999999
+  --ld-window-kb 1000
+  --ld-window-r2 0.8
+  --out results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_snp-pop-AFR
+  --r2
+
+96508 MB RAM detected; reserving 48254 MB for main workspace.
+4997211 variants loaded from .bim file.
+2504 people (0 males, 0 females, 2504 ambiguous) loaded from .fam.
+Ambiguous sex IDs written to
+results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_snp-pop-AFR.nosex
+.
+--keep: 661 people remaining.
+Using up to 23 threads (change this with --threads).
+Before main variant filters, 661 founders and 0 nonfounders present.
+Calculating allele frequencies... 0%1%2%3%4%5%6%7%8%9%10%11%12%13%14%15%16%17%18%19%20%21%22%23%24%25%26%27%28%29%30%31%32%33%34%35%36%37%38%39%40%41%42%43%44%45%46%47%48%49%50%51%52%53%54%55%56%57%58%59%60%61%62%63%64%65%66%67%68%69%70%71%72%73%74%75%76%77%78%79%80%81%82%83%84%85%86%87%88%89%90%91%92%93%94%95%96%97%98%99% done.
+4997211 variants and 661 people pass filters and QC.
+Note: No phenotypes present.
+--r2 to
+results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_snp-pop-AFR.ld
+... 0% [processing]writing]             done.
+[1] "# dump LD pair information"
+[1] "/mnt/BioHome/jreyna/software/anaconda3/hichip-db/bin/plink --bfile /mnt/BioAdHoc/Groups/vd-vijay/Ariel/R24_new/LD-snps-1000G/DupsRemoved/chr6.1kg.phase3.v5.rsn --keep  /mnt/BioAdHoc/Groups/vd-vijay/Ariel/R24_new/LD-snps/lists-pops/var-super_pop_pop-AMR.txt --r2 --ld-snp-list results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_list_SNPs.txt --ld-window-kb 1000 --ld-window 999999 --ld-window-r2 0.8 --out results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_snp-pop-AMR"
+PLINK v1.90b6.21 64-bit (19 Oct 2020)          www.cog-genomics.org/plink/1.9/
+(C) 2005-2020 Shaun Purcell, Christopher Chang   GNU General Public License v3
+Logging to results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_snp-pop-AMR.log.
+Options in effect:
+  --bfile /mnt/BioAdHoc/Groups/vd-vijay/Ariel/R24_new/LD-snps-1000G/DupsRemoved/chr6.1kg.phase3.v5.rsn
+  --keep /mnt/BioAdHoc/Groups/vd-vijay/Ariel/R24_new/LD-snps/lists-pops/var-super_pop_pop-AMR.txt
+  --ld-snp-list results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_list_SNPs.txt
+  --ld-window 999999
+  --ld-window-kb 1000
+  --ld-window-r2 0.8
+  --out results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_snp-pop-AMR
+  --r2
+
+96508 MB RAM detected; reserving 48254 MB for main workspace.
+4997211 variants loaded from .bim file.
+2504 people (0 males, 0 females, 2504 ambiguous) loaded from .fam.
+Ambiguous sex IDs written to
+results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_snp-pop-AMR.nosex
+.
+--keep: 347 people remaining.
+Using up to 23 threads (change this with --threads).
+Before main variant filters, 347 founders and 0 nonfounders present.
+Calculating allele frequencies... 0%1%2%3%4%5%6%7%8%9%10%11%12%13%14%15%16%17%18%19%20%21%22%23%24%25%26%27%28%29%30%31%32%33%34%35%36%37%38%39%40%41%42%43%44%45%46%47%48%49%50%51%52%53%54%55%56%57%58%59%60%61%62%63%64%65%66%67%68%69%70%71%72%73%74%75%76%77%78%79%80%81%82%83%84%85%86%87%88%89%90%91%92%93%94%95%96%97%98%99% done.
+4997211 variants and 347 people pass filters and QC.
+Note: No phenotypes present.
+--r2 to
+results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_snp-pop-AMR.ld
+... 0% [processing]writing]             done.
+[1] "# dump LD pair information"
+[1] "/mnt/BioHome/jreyna/software/anaconda3/hichip-db/bin/plink --bfile /mnt/BioAdHoc/Groups/vd-vijay/Ariel/R24_new/LD-snps-1000G/DupsRemoved/chr6.1kg.phase3.v5.rsn --keep  /mnt/BioAdHoc/Groups/vd-vijay/Ariel/R24_new/LD-snps/lists-pops/var-super_pop_pop-EAS.txt --r2 --ld-snp-list results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_list_SNPs.txt --ld-window-kb 1000 --ld-window 999999 --ld-window-r2 0.8 --out results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_snp-pop-EAS"
+PLINK v1.90b6.21 64-bit (19 Oct 2020)          www.cog-genomics.org/plink/1.9/
+(C) 2005-2020 Shaun Purcell, Christopher Chang   GNU General Public License v3
+Logging to results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_snp-pop-EAS.log.
+Options in effect:
+  --bfile /mnt/BioAdHoc/Groups/vd-vijay/Ariel/R24_new/LD-snps-1000G/DupsRemoved/chr6.1kg.phase3.v5.rsn
+  --keep /mnt/BioAdHoc/Groups/vd-vijay/Ariel/R24_new/LD-snps/lists-pops/var-super_pop_pop-EAS.txt
+  --ld-snp-list results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_list_SNPs.txt
+  --ld-window 999999
+  --ld-window-kb 1000
+  --ld-window-r2 0.8
+  --out results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_snp-pop-EAS
+  --r2
+
+96508 MB RAM detected; reserving 48254 MB for main workspace.
+4997211 variants loaded from .bim file.
+2504 people (0 males, 0 females, 2504 ambiguous) loaded from .fam.
+Ambiguous sex IDs written to
+results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_snp-pop-EAS.nosex
+.
+--keep: 504 people remaining.
+Using up to 23 threads (change this with --threads).
+Before main variant filters, 504 founders and 0 nonfounders present.
+Calculating allele frequencies... 0%1%2%3%4%5%6%7%8%9%10%11%12%13%14%15%16%17%18%19%20%21%22%23%24%25%26%27%28%29%30%31%32%33%34%35%36%37%38%39%40%41%42%43%44%45%46%47%48%49%50%51%52%53%54%55%56%57%58%59%60%61%62%63%64%65%66%67%68%69%70%71%72%73%74%75%76%77%78%79%80%81%82%83%84%85%86%87%88%89%90%91%92%93%94%95%96%97%98%99% done.
+4997211 variants and 504 people pass filters and QC.
+Note: No phenotypes present.
+--r2 to
+results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_snp-pop-EAS.ld
+... 0% [processing]writing]             done.
+[1] "# dump LD pair information"
+[1] "/mnt/BioHome/jreyna/software/anaconda3/hichip-db/bin/plink --bfile /mnt/BioAdHoc/Groups/vd-vijay/Ariel/R24_new/LD-snps-1000G/DupsRemoved/chr6.1kg.phase3.v5.rsn --keep  /mnt/BioAdHoc/Groups/vd-vijay/Ariel/R24_new/LD-snps/lists-pops/var-super_pop_pop-EUR.txt --r2 --ld-snp-list results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_list_SNPs.txt --ld-window-kb 1000 --ld-window 999999 --ld-window-r2 0.8 --out results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_snp-pop-EUR"
+PLINK v1.90b6.21 64-bit (19 Oct 2020)          www.cog-genomics.org/plink/1.9/
+(C) 2005-2020 Shaun Purcell, Christopher Chang   GNU General Public License v3
+Logging to results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_snp-pop-EUR.log.
+Options in effect:
+  --bfile /mnt/BioAdHoc/Groups/vd-vijay/Ariel/R24_new/LD-snps-1000G/DupsRemoved/chr6.1kg.phase3.v5.rsn
+  --keep /mnt/BioAdHoc/Groups/vd-vijay/Ariel/R24_new/LD-snps/lists-pops/var-super_pop_pop-EUR.txt
+  --ld-snp-list results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_list_SNPs.txt
+  --ld-window 999999
+  --ld-window-kb 1000
+  --ld-window-r2 0.8
+  --out results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_snp-pop-EUR
+  --r2
+
+96508 MB RAM detected; reserving 48254 MB for main workspace.
+4997211 variants loaded from .bim file.
+2504 people (0 males, 0 females, 2504 ambiguous) loaded from .fam.
+Ambiguous sex IDs written to
+results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_snp-pop-EUR.nosex
+.
+--keep: 503 people remaining.
+Using up to 23 threads (change this with --threads).
+Before main variant filters, 503 founders and 0 nonfounders present.
+Calculating allele frequencies... 0%1%2%3%4%5%6%7%8%9%10%11%12%13%14%15%16%17%18%19%20%21%22%23%24%25%26%27%28%29%30%31%32%33%34%35%36%37%38%39%40%41%42%43%44%45%46%47%48%49%50%51%52%53%54%55%56%57%58%59%60%61%62%63%64%65%66%67%68%69%70%71%72%73%74%75%76%77%78%79%80%81%82%83%84%85%86%87%88%89%90%91%92%93%94%95%96%97%98%99% done.
+4997211 variants and 503 people pass filters and QC.
+Note: No phenotypes present.
+--r2 to
+results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_snp-pop-EUR.ld
+... 0% [processing]writing]             done.
+[1] "# dump LD pair information"
+[1] "/mnt/BioHome/jreyna/software/anaconda3/hichip-db/bin/plink --bfile /mnt/BioAdHoc/Groups/vd-vijay/Ariel/R24_new/LD-snps-1000G/DupsRemoved/chr6.1kg.phase3.v5.rsn --keep  /mnt/BioAdHoc/Groups/vd-vijay/Ariel/R24_new/LD-snps/lists-pops/var-super_pop_pop-SAS.txt --r2 --ld-snp-list results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_list_SNPs.txt --ld-window-kb 1000 --ld-window 999999 --ld-window-r2 0.8 --out results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_snp-pop-SAS"
+PLINK v1.90b6.21 64-bit (19 Oct 2020)          www.cog-genomics.org/plink/1.9/
+(C) 2005-2020 Shaun Purcell, Christopher Chang   GNU General Public License v3
+Logging to results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_snp-pop-SAS.log.
+Options in effect:
+  --bfile /mnt/BioAdHoc/Groups/vd-vijay/Ariel/R24_new/LD-snps-1000G/DupsRemoved/chr6.1kg.phase3.v5.rsn
+  --keep /mnt/BioAdHoc/Groups/vd-vijay/Ariel/R24_new/LD-snps/lists-pops/var-super_pop_pop-SAS.txt
+  --ld-snp-list results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_list_SNPs.txt
+  --ld-window 999999
+  --ld-window-kb 1000
+  --ld-window-r2 0.8
+  --out results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_snp-pop-SAS
+  --r2
+
+96508 MB RAM detected; reserving 48254 MB for main workspace.
+4997211 variants loaded from .bim file.
+2504 people (0 males, 0 females, 2504 ambiguous) loaded from .fam.
+Ambiguous sex IDs written to
+results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_snp-pop-SAS.nosex
+.
+--keep: 489 people remaining.
+Using up to 23 threads (change this with --threads).
+Before main variant filters, 489 founders and 0 nonfounders present.
+Calculating allele frequencies... 0%1%2%3%4%5%6%7%8%9%10%11%12%13%14%15%16%17%18%19%20%21%22%23%24%25%26%27%28%29%30%31%32%33%34%35%36%37%38%39%40%41%42%43%44%45%46%47%48%49%50%51%52%53%54%55%56%57%58%59%60%61%62%63%64%65%66%67%68%69%70%71%72%73%74%75%76%77%78%79%80%81%82%83%84%85%86%87%88%89%90%91%92%93%94%95%96%97%98%99% done.
+4997211 variants and 489 people pass filters and QC.
+Note: No phenotypes present.
+--r2 to
+results/main/coloc/eQTL_Catalogue/T1D_34012112_Gaulton/GRCh37/BLUEPRINT/monocyte/ldpairs//temp_snp-pop-SAS.ld
+... 0% [processing]writing]             done.
+[1] "# dump LD pair information"
+[1] "# consolidate LD information across all populations"
+[1] "# process LD information for chr6"
+
+
+ **** nrow LD_SNP_Pair_DF : 9 
+
+ ==>> SNPs in LD: chr6 9

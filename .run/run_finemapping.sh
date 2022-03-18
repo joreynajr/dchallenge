@@ -9,4 +9,5 @@ do
 done
 
 #echo $fns | sed 's/ /\n/g'
-snakemake --profile workflow/profiles/local $@ $fns
+#snakemake --profile workflow/profiles/local $@ $fns
+snakemake --profile workflow/profiles/pbs-torque/ $@ $fns

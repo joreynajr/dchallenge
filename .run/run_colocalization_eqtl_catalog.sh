@@ -53,12 +53,13 @@ echo $fns
 #snakemake --profile workflow/profiles/pbs-torque $@ results/main/coloc/Results/eQTL_Catalogue/T1D_34012112_Gaulton/Schmiedel_2018/test
 #snakemake --profile workflow/profiles/local $@ results/main/coloc/Results/eQTL_Catalogue/T1D_34012112_Gaulton/Schmiedel_2018/test
 
-# AD HOC re-run of NK-cells
+# AD HOC re-run of certain cells
 #new_fn="results/main/coloc/Results/Colocalization_SMKN/T1D_34012112_Gaulton/Schmiedel_2018/NK-cell_naive/"
 #snakemake --profile workflow/profiles/pbs-torque/ $@ $new_fn
-new_fn="results/main/coloc/Results/eQTL_Catalogue/T1D_34012112_Gaulton/Schmiedel_2018/CD8_T-cell_anti-CD3-CD28"
-snakemake --profile workflow/profiles/pbs-torque/ $@ $new_fn
+#new_fn="results/main/coloc/Results/eQTL_Catalogue/T1D_34012112_Gaulton/Schmiedel_2018/CD8_T-cell_anti-CD3-CD28"
+#snakemake --profile workflow/profiles/pbs-torque/ $@ $new_fn
+#fns="results/main/coloc/Results/eQTL_Catalogue/T1D_34012112_Gaulton/Schmiedel_2018/CD8_T-cell_anti-CD3-CD28/"
 
 # FULL Run
-#snakemake --profile workflow/profiles/pbs-torque/ $@ $fns
+snakemake --profile workflow/profiles/pbs-torque/ $@ $fns
 #snakemake --profile workflow/profiles/local/ $@ $fns
