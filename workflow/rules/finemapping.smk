@@ -68,6 +68,7 @@ rule run_finemapping:
 #            mv $old_fn {output}
 #        """
 
+# Performing LD Pair analysis for finemapped data
 rule finemapped_ldpairs:
     input:
         snp_file = 'results/main/finemapping/{gwas_source}/{ref_genome}/offset_{offset}/Summary/sss/FINAL_top_snp_credible_set.txt',

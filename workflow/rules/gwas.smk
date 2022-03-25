@@ -16,6 +16,8 @@ rule process_split_ols_ids:
                                     {input} {output} >> {log} 2>&1
         '''
         
+
+# liftover GWAS summary statistics to GRCh38 when necessary.
 rule liftover_grch37_to_38_gwas_summary_stats: 
     input:
         ss = 'results/main/coloc/Data/T1D_GWAS/{gwas_source}/GRCh37/GWAS_input_colocalization_pval_lt_5eMinus8.txt',
@@ -24,6 +26,8 @@ rule liftover_grch37_to_38_gwas_summary_stats:
         'results/main/coloc/Data/T1D_GWAS/{gwas_source}/GRCh38/GWAS_input_colocalization_pval_lt_5eMinus8.txt',
     log:
         'results/main/coloc/Data/T1D_GWAS/{gwas_source}/logs/rule.liftover_grch37_gwas_summary_stats.{gwas_source}.log'
+    wildcard_constraints:
+        gwas_source = "\w"
     shell:
         r'''
             # convert the SNP file into bed format 
