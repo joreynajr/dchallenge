@@ -1,4 +1,4 @@
-hichip_db_py: "/mnt/BioHome/jreyna/software/anaconda3/hichip-db/bin/python"
+hichip_db_py: "/mnt/BioAdHoc/Groups/vd-ay/jreyna/software/mambaforge/envs/hichip-db/bin/python"
 hic_tls_py: "/mnt/BioHome/jreyna/software/anaconda3/envs/hic_tls/bin/python"
 hic_tls_R: "/share/apps/R/3.4.3/lib64/R/bin/Rscript"
 R4: "/mnt/BioHome/jreyna/R-Versions/R-4.0.3/bin/Rscript"
