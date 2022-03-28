@@ -1,0 +1,71 @@
+COLOCALIZATION + HICHIP LOOPS (SGL ANALYSES)
+-------------------------------------------------------------------------------
+Using 4 GWAS datasets.
+Using 57 eQTL datasets.
+This should result in 4 * 57 = 228 possible analyses but I only got a results 
+for 83. Most should have been run but failed. Also, why do I only have 30
+logs?
+
+Lastly, there are 17 entries that map between eQTL and HiChIP so, when all
+data is available, I should be able to get 17 SGL results for each GWAS
+analysis. Currently I have 28 total SGL analysese 
+
+    72 results/main/sgls/T1D_25751624/Quach_2016/monocyte_IAV/monocyte_naive/master.tsv
+    25 results/main/sgls/T1D_25751624/Quach_2016/monocyte_LPS/monocyte_naive/master.tsv
+    77 results/main/sgls/T1D_25751624/Quach_2016/monocyte_Pam3CSK4/monocyte_naive/master.tsv
+    44 results/main/sgls/T1D_25751624/Quach_2016/monocyte_R848/monocyte_naive/master.tsv
+    50 results/main/sgls/T1D_25751624/Schmiedel_2018/B-cell_naive/B-cell_naive/master.tsv
+    81 results/main/sgls/T1D_25751624/Schmiedel_2018/CD4_T-cell_anti-CD3-CD28/CD4_T-cell_naive/master.tsv
+    85 results/main/sgls/T1D_25751624/Schmiedel_2018/CD4_T-cell_naive/CD4_T-cell_naive/master.tsv
+   133 results/main/sgls/T1D_25751624/Schmiedel_2018/CD8_T-cell_anti-CD3-CD28/CD8_T-cell_naive/master.tsv
+    33 results/main/sgls/T1D_25751624/Schmiedel_2018/monocyte_CD16_naive/monocyte_naive/master.tsv
+    49 results/main/sgls/T1D_25751624/Schmiedel_2018/monocyte_naive/monocyte_naive/master.tsv
+   101 results/main/sgls/T1D_25751624/Schmiedel_2018/NK-cell_naive/NK-cell_naive/master.tsv
+
+    58 results/main/sgls/T1D_32005708/Quach_2016/monocyte_IAV/monocyte_naive/master.tsv
+   186 results/main/sgls/T1D_32005708/Schmiedel_2018/B-cell_naive/B-cell_naive/master.tsv
+   186 results/main/sgls/T1D_32005708/Schmiedel_2018/CD4_T-cell_anti-CD3-CD28/CD4_T-cell_naive/master.tsv
+   129 results/main/sgls/T1D_32005708/Schmiedel_2018/CD8_T-cell_anti-CD3-CD28/CD8_T-cell_naive/master.tsv
+    58 results/main/sgls/T1D_32005708/Schmiedel_2018/CD8_T-cell_naive/CD8_T-cell_naive/master.tsv
+   129 results/main/sgls/T1D_32005708/Schmiedel_2018/monocyte_CD16_naive/monocyte_naive/master.tsv
+   186 results/main/sgls/T1D_32005708/Schmiedel_2018/monocyte_naive/monocyte_naive/master.tsv
+   129 results/main/sgls/T1D_32005708/Schmiedel_2018/NK-cell_naive/NK-cell_naive/master.tsv
+
+    68 results/main/sgls/T1D_34012112_Gaulton/Quach_2016/monocyte_IAV/monocyte_naive/master.tsv
+    42 results/main/sgls/T1D_34012112_Gaulton/Quach_2016/monocyte_Pam3CSK4/monocyte_naive/master.tsv
+    93 results/main/sgls/T1D_34012112_Gaulton/Quach_2016/monocyte_R848/monocyte_naive/master.tsv
+    39 results/main/sgls/T1D_34012112_Gaulton/Schmiedel_2018/B-cell_naive/B-cell_naive/master.tsv
+   218 results/main/sgls/T1D_34012112_Gaulton/Schmiedel_2018/CD4_T-cell_anti-CD3-CD28/CD4_T-cell_naive/master.tsv
+    51 results/main/sgls/T1D_34012112_Gaulton/Schmiedel_2018/CD4_T-cell_naive/CD4_T-cell_naive/master.tsv
+    52 results/main/sgls/T1D_34012112_Gaulton/Schmiedel_2018/CD8_T-cell_anti-CD3-CD28/CD8_T-cell_naive/master.tsv
+    20 results/main/sgls/T1D_34012112_Gaulton/Schmiedel_2018/CD8_T-cell_naive/CD8_T-cell_naive/master.tsv
+    49 results/main/sgls/T1D_34012112_Gaulton/Schmiedel_2018/NK-cell_naive/NK-cell_naive/master.tsv
+
+I repeated this analysis using LD SNPs (82 samples). I performed this analysis and got 6 entries:
+
+   1317 results/main/GRCh37/sgls/ldpairs/T1D_25751624/Quach_2016/monocyte_IAV/monocyte_naive/script_version/master.tsv
+   3197 results/main/GRCh37/sgls/ldpairs/T1D_25751624/Quach_2016/monocyte_Pam3CSK4/monocyte_naive/script_version/master.tsv
+   7816 results/main/GRCh37/sgls/ldpairs/T1D_25751624/Quach_2016/monocyte_R848/monocyte_naive/script_version/master.tsv
+
+    343 results/main/GRCh37/sgls/ldpairs/T1D_32005708/Quach_2016/monocyte_IAV/monocyte_naive/script_version/master.tsv
+
+    732 results/main/GRCh37/sgls/ldpairs/T1D_34012112_Gaulton/Quach_2016/monocyte_Pam3CSK4/monocyte_naive/script_version/master.tsv
+   2628 results/main/GRCh37/sgls/ldpairs/T1D_34012112_Gaulton/Quach_2016/monocyte_R848/monocyte_naive/script_version/master.tsv
+
+FINE MAPPING + HICHIP LOOPS
+-------------------------------------------------------------------------------
+Using 3 GWAS datasets with allele frequency information. 
+Intersecting with HiChIP from 5 immune cell lines from (Chandra et al., 2021).
+
+NEED TO ADD MORE HiChIP.
+
+PIEQTL ANALYSES WITH SIG GWAS
+-------------------------------------------------------------------------------
+I linked data from Sourya which includes just the 5 immune cell lines from 
+(Chandra et al., 2021). A little tricker to add more of these analyses until 
+HiChIP Database makes progress.
+
+SCAVENGE ANALYSES
+-------------------------------------------------------------------------------
+Using snATAC-seq from (Chiou et al., 2021).
+
