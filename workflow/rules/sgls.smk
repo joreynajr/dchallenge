@@ -1,7 +1,7 @@
 # Filter for eQTLs with colocalizations for annotations purposes
 # Issue: Doesnt seem like I need it because the colocalization script takes 
 # care of this now. 
-rule filter_eqtls_using_colocs: #(Status: developing)
+rule filter_eqtls_using_colocs: #(Status: running)
     input:
         eqtl = rules.add_missing_cols.output,
         coloc_dir = rules.run_colocalization_eqtl_catalog.output,
@@ -19,7 +19,7 @@ rule filter_eqtls_using_colocs: #(Status: developing)
         '''
 
 # liftover the significant eQTLs to GRCh37
-rule liftover_sig_eqtls_to_GRCh37:
+rule liftover_sig_eqtls_to_GRCh37: # (Status: running)
     input:
         rules.filter_eqtls_using_colocs.output.outfn
     output:
@@ -69,7 +69,6 @@ rule liftover_loops_to_GRCh38: #(Status: running)
         ppn = 1,
     shell:
         r'''
-
             # lift the left anchor
             echo "# lift the left anchor" > {log}
             left="{input.loops}.left"
@@ -202,30 +201,30 @@ rule combine_intersections: #(Status: developing)
         '../notebooks/reports/Combine_Master_Tables.py.ipynb'
 
 
-
-# Annotation for colocalized SNP-Gene pairs using loops
-# and producing a notebook as a log file
-#loops = rules.liftover_loops_to_GRCh38.output.loops,
-rule Find_SGL_for_Coloc_and_LD: #(Status: developing)
-    input:
-        eqtl = rules.liftover_sig_eqtls_to_GRCh37.output.outfn,
-        coloc = rules.find_ldpairs_for_coloc_snps.output.ld,
-        loops = 'results/main/h3k27ac_hichip/{loop_source}/FitHiChIP_S/FitHiChIP.interactions_FitHiC_Q0.01.bed',
-        genome_sizes = 'results/refs/hg19/hg19.chrom.sizes',
-        gencode = 'results/refs/gencode/v30/gencode.v30.annotation.grch37.bed'
-    output:
-        outdir = directory('results/main/GRCh37/sgls/ldpairs/{gwas_source}/{eqtl_source}/{ge_source}/{loop_source}/')
-    log: 
-        #notebook='results/main/sgls/logs/annotate_colocs.{gwas_source}.{eqtl_source}.{ge_source}.{loop_source}.ipynb' #not working, JSON Error
-        'results/main/sgls/logs/annotate_colocs.{gwas_source}.{eqtl_source}.{ge_source}.{loop_source}.log'
-    params:
-        loop_slop = 25000
-    resources:
-        mem_mb = 24000,
-        nodes = 1,
-        ppn = 1,
-    notebook:
-            "../scripts/sgls/Find_SGLs.eQTL_Catalogue_Format.v2.with_LDPairs.py.ipynb"
+# DEPRECATED
+## Annotation for colocalized SNP-Gene pairs using loops
+## and producing a notebook as a log file
+##loops = rules.liftover_loops_to_GRCh38.output.loops,
+#rule Find_SGL_for_Coloc_and_LD: #(Status: developing)
+#    input:
+#        eqtl = rules.liftover_sig_eqtls_to_GRCh37.output.outfn,
+#        coloc = rules.find_ldpairs_for_coloc_snps.output.ld,
+#        loops = 'results/main/h3k27ac_hichip/{loop_source}/FitHiChIP_S/FitHiChIP.interactions_FitHiC_Q0.01.bed',
+#        genome_sizes = 'results/refs/hg19/hg19.chrom.sizes',
+#        gencode = 'results/refs/gencode/v30/gencode.v30.annotation.grch37.bed'
+#    output:
+#        outdir = directory('results/main/GRCh37/sgls/ldpairs/{gwas_source}/{eqtl_source}/{ge_source}/{loop_source}/')
+#    log: 
+#        #notebook='results/main/sgls/logs/annotate_colocs.{gwas_source}.{eqtl_source}.{ge_source}.{loop_source}.ipynb' #not working, JSON Error
+#        'results/main/sgls/logs/annotate_colocs.{gwas_source}.{eqtl_source}.{ge_source}.{loop_source}.log'
+#    params:
+#        loop_slop = 25000
+#    resources:
+#        mem_mb = 24000,
+#        nodes = 1,
+#        ppn = 1,
+#    notebook:
+#            "../scripts/sgls/Find_SGLs.eQTL_Catalogue_Format.v2.with_LDPairs.py.ipynb"
 
 # Annotation for colocalized SNP-Gene pairs using loops
 # and producing a notebook as a log file

@@ -63,13 +63,16 @@ dir.create(opt$workdir, showWarnings=F, recursive=T)
 # Loading the SNP datasets 
 #########################################################################################
 print("# Loading the SNP datasets")
+
 snp_data <- data.table::fread(as.character(opt["snp-file"]), header=as.logical(opt["header"]))
+
 #colnames(snp_data) <- c("regionID", "GWASLoci", "index", "rsid", "chr",
 #                        "pos", "allele1", "allele2", "maf", "beta", "se",
 #                        "z", "prob", "log10bf", "mean", "sd", "mean_incl",
 #                        "sd_incl","pval")
 snp_data <- snp_data %>% rename(chr=as.numeric(opt["chr-col"]),
                                 pos=as.numeric(opt["pos-col"]))
+
 if (opt["chr-prefix"] == FALSE){
     snp_data[,"chr"] <- paste0('chr', snp_data[,"chr"])
 }
