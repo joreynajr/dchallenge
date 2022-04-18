@@ -1,0 +1,60 @@
+#PBS -l nodes=1:ppn=1
+#PBS -l mem=12gb
+#PBS -l walltime=100:00:00
+#PBS -e results/main/eqtl/logs/
+#PBS -o results/main/eqtl/logs/
+#PBS -N parse_eqtl_catalog_with_complete_fields
+#PBS -d .
+#PBS -V
+
+# # run bash in strict mode
+set -euo pipefail
+IFS=$'\n\t'
+
+# source useful tools
+source config/config.sh
+
+# rule processing_eqtl_catalog_with_complete_fields: # (status: running)
+# dummy value
+PBS_ARRAYID=49
+
+# start message
+echo "Start Job"
+
+# extracting sample information
+IFS=$'\t'
+run_info=( $(sed -n "${PBS_ARRAYID}p" config/eqtl_samplesheets/eqtl.t1d_only.txt) )
+eqtl_source=${run_info[0]}
+ge_source=${run_info[1]}
+IFS=$'\n\t' # can go back to using \n\t
+
+# printing log information
+echo "eqtl_source: $eqtl_source"
+echo "ge_source: $ge_source"
+
+# setting the input paths
+#input.rules.add_missing_cols.output
+input="results/main/eqtl/${eqtl_source}/ge/${eqtl_source}_ge_${ge_source}.all.dist.fdr.tsv.gz"
+echo "input: ${input}"
+
+# setting the output paths
+output="results/main/eqtl/${eqtl_source}/ge/${eqtl_source}_ge_${ge_source}.all.dist.fdr.input.tsv.gz"
+echo "output: ${output}"
+
+# setting parameter values
+interm="results/main/eqtl/${eqtl_source}/ge/${eqtl_source}_ge_${ge_source}.all.dist.fdr.input.tsv"
+echo "params.interm: ${interm}"
+
+# make output directories that are not present 
+mkdir -p $(dirname $output)
+
+# running the main command 
+echo "zcat + sed + awk processing"
+zcat ${input} | \
+     sed '1d' | \
+     awk 'BEGIN{OFS="	"}; {print "chr"$2, $3, $17, $20, $10, $9, $21}' > \
+     ${interm}
+${bgzip} ${interm}
+
+# end message
+echo "End Job"

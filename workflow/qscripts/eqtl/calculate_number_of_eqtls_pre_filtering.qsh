@@ -1,0 +1,63 @@
+#PBS -l nodes=1:ppn=1
+#PBS -l mem=4gb
+#PBS -l walltime=100:00:00
+#PBS -e results/main/eqtl/logs/
+#PBS -o results/main/eqtl/logs/
+#PBS -N calculate_number_of_eqtls_pre_filtering
+#PBS -d .
+#PBS -V
+
+# # run bash in strict mode
+set -euo pipefail
+IFS=$'\n\t'
+
+# rule calculate_number_of_eqtls_pre_filtering: # (Status: developing)
+# Count the number of eqtl after filtering with FDR
+
+# dummy value
+#PBS_ARRAYID=49
+#PBS_ARRAYID=$1
+
+# start message
+echo "Start Job"
+
+# extracting sample information
+IFS=$'\t'
+run_info=( $(sed -n "${PBS_ARRAYID}p" config/eqtl_samplesheets/eqtl.t1d_only.txt) )
+eqtl_source=${run_info[0]}
+ge_source=${run_info[1]}
+IFS=$'\n\t' # can go back to using \n\t
+
+# printing log information
+echo "eqtl_source: $eqtl_source"
+echo "ge_source: $ge_source"
+
+# setting the input paths
+#eqtl="results/main/eqtl/${eqtl_source}/ge/${eqtl_source}_ge_${ge_source}.all.tsv.gz"
+if [[ "ImmuNexUT" == "${eqtl_source}" ]];
+then
+    eqtl="results/main/eqtl/${eqtl_source}/ge/${eqtl_source}_ge_${ge_source}.all.complete_fields.tsv.gz"
+else
+    eqtl="results/main/eqtl/${eqtl_source}/ge/${eqtl_source}_ge_${ge_source}.all.fdr.txt"
+fi
+echo "input.eqtl: ${eqtl}"
+
+# setting the output paths
+output="results/main/eqtl/${eqtl_source}/ge/${eqtl_source}_ge_${ge_source}.all.prefilter.num_eqtls.txt"
+echo "output: ${output}"
+
+# make output directories that are not present 
+mkdir -p $(dirname $output)
+
+# running the main command 
+if [[ "ImmuNexUT" == "${eqtl_source}" ]];
+then
+    echo "Running: zcat ${eqtl} | wc -l > ${output}"
+    cat ${eqtl} | wc -l  > ${output} 
+else
+    echo "Running: cat ${eqtl} | wc -l  > ${output}"
+    cat ${eqtl} | wc -l  > ${output}
+fi
+
+# end message
+echo "End Job"
