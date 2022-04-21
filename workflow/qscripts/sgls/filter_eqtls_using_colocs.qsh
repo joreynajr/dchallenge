@@ -1,0 +1,89 @@
+#PBS -l nodes=1:ppn=1
+#PBS -l mem=4gb
+#PBS -l walltime=100:00:00
+#PBS -e results/main/sgls/logs/
+#PBS -o results/main/sgls/logs/
+#PBS -N filter_eqtls_using_colocs
+#PBS -d .
+#PBS -V
+
+# # run bash in strict mode
+set -euo pipefail
+IFS=$'\n\t'
+
+# rule calculate_number_of_eqtls_pre_filtering: # (Status: developing)
+# Count the number of eqtl after filtering with FDR
+
+# dummy value
+#PBS_ARRAYID=49
+#PBS_ARRAYID=$1
+
+# load helper functions
+source workflow/qscripts/helper_functions.sh
+
+# dummy value when not running with qsub
+echo
+if [[ -z ${PBS_ARRAYID+x} ]]
+then
+    echo "Running with bash, setting PBS_ARRAYID=\$1=$1"
+    PBS_ARRAYID=$1
+else
+    echo "Running with qsub, PBS_ARRAYID=$PBS_ARRAYID"
+fi
+echo
+
+# start message
+echo "Start Job"
+echo
+
+# extracting sample information
+IFS=$'\t'
+run_info=( $(sed -n "${PBS_ARRAYID}p" config/sgl_samplesheets/sgl.samplesheet.tsv) )
+echo "Using samplesheet: config/sgl_samplesheets/sgl.samplesheet.tsv"
+gwas_source=${run_info[0]}
+eqtl_source=${run_info[1]}
+ge_source=${run_info[2]}
+loop_source=${run_info[3]}
+IFS=$'\n\t' # can go back to using \n\t
+
+# determining the eQTL DB
+if [[ "$eqtl_source" == "ImmuNexUT" ]]
+then
+    eqtl_db="ImmuNexUT"
+else
+    eqtl_db="eQTL_Catalogue"
+fi
+
+# printing log information
+echo "gwas_source: $gwas_source"
+echo "eqtl_db: $eqtl_db"
+echo "eqtl_source: $eqtl_source"
+echo "ge_source: $ge_source"
+echo "loop_source: $loop_source"
+echo
+
+# setting the input paths
+eqtl="results/main/eqtl/${eqtl_db}/ge/${eqtl_source}_ge_${ge_source}.all.dist.fdr.tsv.gz"
+coloc="results/main/coloc/Results/${eqtl_db}/${gwas_source}/${eqtl_source}/${ge_source}/FINAL_Summary_Coloc_Gene_SNP_Pairs.bed"
+echo "input.eqtl: ${eqtl} - $(path_exists $eqtl)"
+echo "input.coloc: ${coloc} - $(path_exists $coloc)"
+echo
+
+# setting the output paths
+outfn="results/main/sgls/${eqtl_db}/${gwas_source}/${eqtl_source}/${ge_source}/eqtls.coloc_filtered.tsv.gz"
+echo "output.outfn: ${outfn} - $(path_exists $outfn)"
+
+# make output directories that are not present 
+mkdir -p $(dirname ${outfn})
+
+# filter eQTLs using colocs
+echo "# filter eQTLs using colocs"
+read -r cmd << EOM
+python workflow/scripts/sgls/Filter_eQTLs_with_Colocs.py \
+                            ${eqtl} ${coloc} ${outfn}
+EOM
+echo "Running: ${cmd}"
+eval $cmd
+
+# end message
+echo "End Job"

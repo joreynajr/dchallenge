@@ -1,0 +1,106 @@
+#PBS -l nodes=1:ppn=1
+#PBS -l mem=4gb
+#PBS -l walltime=100:00:00
+#PBS -e results/main/eqtl/logs/
+#PBS -o results/main/eqtl/logs/
+#PBS -N calculate_number_of_eqtls_pre_filtering
+#PBS -d .
+#PBS -V
+
+# # run bash in strict mode
+set -euo pipefail
+IFS=$'\n\t'
+
+# rule calculate_number_of_eqtls_pre_filtering: # (Status: developing)
+# Count the number of eqtl after filtering with FDR
+
+# dummy value when not running with qsub
+echo
+if [[ -z ${PBS_ARRAYID+x} ]]
+then
+    echo "Running with bash, setting PBS_ARRAYID=\$1=$1"
+    PBS_ARRAYID=$1
+else
+    echo "Running with qsub, PBS_ARRAYID=$PBS_ARRAYID"
+fi
+echo
+
+# setting software paths
+cooler="/mnt/BioAdHoc/Groups/vd-ay/jreyna/software/mambaforge/envs/hichip-db/bin/cooler"
+pairLiftOver="/mnt/BioAdHoc/Groups/vd-ay/jreyna/software/mambaforge/bin/pairLiftOver"
+
+# start message
+echo "Start Job"
+
+# extracting sample information
+IFS=$'\t'
+run_info=( $(sed -n "${PBS_ARRAYID}p" config/hichip_samplesheets/hichip.samplesheet.tsv) )
+loop_source=${run_info[0]}
+dice_name=${run_info[1]}
+IFS=$'\n\t' # can go back to using \n\t
+
+# printing log information
+echo "loop_source: $loop_source"
+echo "dice_name: $dice_name"
+
+# setting the input paths
+loops="results/main/2021_Nikhil_eQTL/Data/FitHiChIP_Loops/${dice_name}/FitHiChIP_S/FitHiChIP.interactions_FitHiC_Q0.01_WashU.bed.gz"
+echo "input.loops: ${loops}"
+
+# setting the output paths
+bedpe="results/main/2021_Nikhil_eQTL/Data/FitHiChIP_Loops/${dice_name}/FitHiChIP_S/FitHiChIP.interactions.bedpe"
+cool_grch37="results/main/2021_Nikhil_eQTL/Data/FitHiChIP_Loops/${dice_name}/FitHiChIP_S/FitHiChIP.interactions.GRCh37.cool"
+cool_grch38="results/main/2021_Nikhil_eQTL/Data/FitHiChIP_Loops/${dice_name}/FitHiChIP_S/FitHiChIP.interactions.GRCh38.cool"
+dump_grch38="results/main/2021_Nikhil_eQTL/Data/FitHiChIP_Loops/${dice_name}/FitHiChIP_S/FitHiChIP.interactions.GRCh38.dump.txt"
+echo "output.bedpe: ${bedpe}"
+echo "output.cool_grch37: ${cool_grch37}"
+echo "output.cool_grch38: ${cool_grch38}"
+
+# setting the params paths
+genomesizes_grch37="results/refs/hg19/hg19.chrom.sizes"
+genomesizes_grch38="results/refs/hg38/hg38.chrom.sizes"
+res=5000
+
+# make output directories that are not present 
+mkdir -p $(dirname $bedpe)
+
+# convert from the washU to bedpe format
+#echo "# convert from the washU to bedpe format"
+cmd=$(echo "zcat \${loops} | sed -e \"s/:/	/\" -e \"s/-/	/\" -e \"s/,/	/g\" | awk 'BEGIN{OFS=\"	\"}; {print \$1, \$2, \$3, \$4, \$5, \$6, \"0\", \$7}' > \${bedpe}")
+echo "Running: ${cmd}"
+#eval $cmd
+
+# convert from bedpe to cool
+echo "# convert from bedpe to cool"
+cmd=$(echo $cooler load -f bg2 ${genomesizes_grch37}:${res} --field pvalue=8 ${bedpe} ${cool_grch37})
+echo "Running: ${cmd}"
+#eval $cmd
+
+# perform the liftover from GRCh37 to GRCh38
+echo "# perform the liftover from GRCh37 to GRCh38"
+cool_prefix_grch38="results/main/2021_Nikhil_eQTL/Data/FitHiChIP_Loops/${dice_name}/FitHiChIP_S/FitHiChIP.interactions.GRCh38"
+read -r cmd << EOM
+$pairLiftOver --input ${cool_grch37} \
+            --input-format cooler \
+            --in-assembly hg19 \
+            --out-pre ${cool_prefix_grch38} \
+            --output-format cool \
+            --out-chromsizes ${genomesizes_grch38} \
+            --out-assembly hg38 \
+            --memory 4G 
+EOM
+echo "Running: ${cmd}"
+eval $cmd
+
+# dump cool file GRCh38
+echo "# dump cool file GRCh38"
+cmd="cooler dump -o ${dump_grch38} ${cool_grch38}"
+#echo "Running: ${cmd}"
+#eval $cmd
+
+
+
+
+
+# end message
+echo "End Job"

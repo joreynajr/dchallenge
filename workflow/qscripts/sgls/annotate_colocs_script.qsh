@@ -1,0 +1,132 @@
+#PBS -l nodes=1:ppn=1
+#PBS -l mem=24gb
+#PBS -l walltime=100:00:00
+#PBS -e results/main/sgls/logs/
+#PBS -o results/main/sgls/logs/
+#PBS -N annotate_colocs_script
+#PBS -d .
+#PBS -V
+
+# # run bash in strict mode
+set -euo pipefail
+IFS=$'\n\t'
+
+# rule calculate_number_of_eqtls_pre_filtering: # (Status: developing)
+# Count the number of eqtl after filtering with FDR
+
+# dummy value when not running with qsub
+echo
+if [[ -z ${PBS_ARRAYID+x} ]]
+then
+    echo "Running with bash, setting PBS_ARRAYID=\$1=$1"
+    PBS_ARRAYID=$1
+else
+    echo "Running with qsub, PBS_ARRAYID=$PBS_ARRAYID"
+fi
+echo
+
+# load helper functions
+source workflow/qscripts/helper_functions.sh
+python_path="/mnt/BioAdHoc/Groups/vd-ay/jreyna/software/mambaforge/envs/hichip-db/bin/python"
+
+# start message
+echo "Start Job"
+
+# extracting sample information
+IFS=$'\t'
+run_info=( $(sed -n "${PBS_ARRAYID}p" config/sgl_samplesheets/sgl.samplesheet.tsv) )
+echo "Using samplesheet: config/sgl_samplesheets/sgl.samplesheet.tsv"
+gwas_source=${run_info[0]}
+eqtl_source=${run_info[1]}
+ge_source=${run_info[2]}
+loop_source=${run_info[3]}
+IFS=$'\n\t' # can go back to using \n\t
+
+if [[ "$eqtl_source" == "ImmuNexUT" ]]
+then
+    eqtl_db="ImmuNexUT"
+else
+    eqtl_db="eQTL_Catalogue"
+fi
+
+# printing log information
+echo "gwas_source: $gwas_source"
+echo "eqtl_db: $eqtl_db"
+echo "eqtl_source: $eqtl_source"
+echo "ge_source: $ge_source"
+echo "loop_source: $loop_source"
+echo
+
+# setting the input paths
+eqtl="results/main/sgls/${eqtl_db}/${gwas_source}/${eqtl_source}/${ge_source}/eqtls.coloc_filtered.tsv.gz"
+coloc="results/main/coloc/Results/${eqtl_db}/${gwas_source}/${eqtl_source}/${ge_source}/FINAL_Summary_Coloc_Gene_SNP_Pairs.bed"
+loops="results/main/h3k27ac_hichip/${loop_source}/FitHiChIP_S/FitHiChIP.interactions_FitHiC_Q0.01.grch38.bed"
+genome_sizes='results/refs/hg38/hg38.chrom.sizes'
+gencode='results/refs/gencode/v30/gencode.v30.annotation.bed'
+echo "input.eqtl: ${eqtl} - $(path_exists $eqtl)"
+echo "input.coloc: ${coloc} - $(path_exists $coloc)"
+echo "input.loops: ${loops} - $(path_exists $loops)"
+echo "input.genome_sizes: ${genome_sizes} - $(path_exists $genome_sizes)"
+echo "input.gencode: ${gencode} - $(path_exists $gencode)"
+echo
+
+# setting the output paths
+outdir="results/main/sgls/${gwas_source}/${eqtl_source}/${ge_source}/${loop_source}/"
+echo "output.outdir: ${outdir} - $(path_exists $outdir)"
+echo
+
+# setting the params paths
+loop_slop=25000
+
+# make output directories that are not present 
+mkdir -p ${outdir}
+
+# annotate SGLs 
+echo "# annotate SGLs"
+
+if [[ "$eqtl_db" == "ImmuNexUT" ]]
+then
+read -r cmd << EOM
+$python_path workflow/scripts/sgls/Find_SGLs.eQTL_Catalogue_Format.v3.py \
+                                        --eqtl ${eqtl} \
+                                        --coloc ${coloc} \
+                                        --loop ${loops} \
+                                        --celltype ${ge_source} \
+                                        --gs ${genome_sizes} \
+                                        --gene-ref ${gencode} \
+                                        --outdir ${outdir} \
+                                        --eqtl-chr 1 \
+                                        --eqtl-pos 2 \
+                                        --eqtl-geneid 3 \
+                                        --eqtl-beta 5 \
+                                        --eqtl-pvalue 6 \
+                                        --eqtl-dist 4 \
+                                        --eqtl-fdr 7
+
+EOM
+elif [[ "$eqtl_db" == "eQTL_Catalog" ]] # underdeveleopment
+then
+# need to the change the column indexes 
+read -r cmd << EOM
+$python_path workflow/scripts/sgls/Find_SGLs.eQTL_Catalogue_Format.v3.py \
+                                        --eqtl ${eqtl} \
+                                        --coloc ${coloc} \
+                                        --loop ${loops} \
+                                        --celltype ${ge_source} \
+                                        --gs ${genome_sizes} \
+                                        --gene-ref ${gencode} \
+                                        --outdir ${outdir} \
+                                        --eqtl-chr 1 \
+                                        --eqtl-pos 2 \
+                                        --eqtl-geneid 3 \
+                                        --eqtl-beta 5 \
+                                        --eqtl-pvalue 6 \
+                                        --eqtl-dist 4 \
+                                        --eqtl-fdr 7
+EOM
+fi
+echo "Running: ${cmd}"
+eval $cmd
+
+# end message
+echo "End Job"
