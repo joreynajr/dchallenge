@@ -41,9 +41,21 @@ echo "input: ${input}"
 output="results/main/eqtl/${eqtl_source}/ge/${eqtl_source}_ge_${ge_source}.all.dist.fdr.input.tsv.gz"
 echo "output: ${output}"
 
+# stop running if output exists
+if [[ -e "${output}" ]]
+then
+    echo "output: ${output} already exists."
+    echo "Not running the rest of this script."
+
+    # end message
+    echo "End Job"
+    exit
+fi
+
 # setting parameter values
 interm="results/main/eqtl/${eqtl_source}/ge/${eqtl_source}_ge_${ge_source}.all.dist.fdr.input.tsv"
 echo "params.interm: ${interm}"
+
 
 # make output directories that are not present 
 mkdir -p $(dirname $output)

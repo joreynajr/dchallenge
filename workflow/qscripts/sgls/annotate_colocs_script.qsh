@@ -75,6 +75,17 @@ outdir="results/main/sgls/${gwas_source}/${eqtl_source}/${ge_source}/${loop_sour
 echo "output.outdir: ${outdir} - $(path_exists $outdir)"
 echo
 
+# stop running if outdir exists
+if [[ -e "${outdir}" ]]
+then
+    echo "outdir: ${outdir} already exists."
+    echo "Not running the rest of this script."
+
+    # end message
+    echo "End Job"
+    exit
+fi
+
 # setting the params paths
 loop_slop=25000
 
@@ -87,7 +98,7 @@ echo "# annotate SGLs"
 if [[ "$eqtl_db" == "ImmuNexUT" ]]
 then
 read -r cmd << EOM
-$python_path workflow/scripts/sgls/Find_SGLs.eQTL_Catalogue_Format.v3.py \
+$python_path workflow/scripts/sgls/Find_SGLs.eQTL_Catalogue_Format.v3.qsub_version.py \
                                         --eqtl ${eqtl} \
                                         --coloc ${coloc} \
                                         --loop ${loops} \
@@ -108,7 +119,7 @@ elif [[ "$eqtl_db" == "eQTL_Catalog" ]] # underdeveleopment
 then
 # need to the change the column indexes 
 read -r cmd << EOM
-$python_path workflow/scripts/sgls/Find_SGLs.eQTL_Catalogue_Format.v3.py \
+$python_path workflow/scripts/sgls/Find_SGLs.eQTL_Catalogue_Format.v3.qsub_version.py \
                                         --eqtl ${eqtl} \
                                         --coloc ${coloc} \
                                         --loop ${loops} \

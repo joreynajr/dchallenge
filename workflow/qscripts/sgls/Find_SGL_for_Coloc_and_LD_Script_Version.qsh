@@ -1,0 +1,158 @@
+#PBS -l nodes=1:ppn=1
+#PBS -l mem=24gb
+#PBS -l walltime=100:00:00
+#PBS -e results/main/sgls/logs/
+#PBS -o results/main/sgls/logs/
+#PBS -N Find_SGL_for_Coloc_and_LD_Script_Version
+#PBS -d .
+#PBS -V
+
+# # run bash in strict mode
+set -euo pipefail
+IFS=$'\n\t'
+
+# dummy value when not running with qsub
+echo
+if [[ -z ${PBS_ARRAYID+x} ]]
+then
+    echo "Running with bash, setting PBS_ARRAYID=\$1=$1"
+    PBS_ARRAYID=$1
+else
+    echo "Running with qsub, PBS_ARRAYID=$PBS_ARRAYID"
+fi
+echo
+
+# load helper functions and paths
+source workflow/qscripts/helper_functions.sh
+
+# start message
+echo "Start Job"
+
+# extracting sample information
+IFS=$'\t'
+samplesheet="config/sgl_samplesheets/sgl.samplesheet.tsv"
+run_info=( $(sed -n "${PBS_ARRAYID}p" $samplesheet) )
+echo "Using samplesheet: ${samplesheet}"
+gwas_source=${run_info[0]}
+eqtl_source=${run_info[1]}
+ge_source=${run_info[2]}
+loop_source=${run_info[3]}
+IFS=$'\n\t' # can go back to using \n\t
+
+if [[ "$eqtl_source" == "ImmuNexUT" ]]
+then
+    eqtl_db="ImmuNexUT"
+else
+    eqtl_db="eQTL_Catalogue"
+fi
+
+# printing log information
+echo "gwas_source: $gwas_source"
+echo "eqtl_db: $eqtl_db"
+echo "eqtl_source: $eqtl_source"
+echo "ge_source: $ge_source"
+echo "loop_source: $loop_source"
+echo
+
+# setting the input paths
+eqtl="results/main/GRCh37/sgls/${eqtl_db}/${gwas_source}/${eqtl_source}/${ge_source}/eqtls.coloc_filtered.tsv.gz"
+coloc="results/main/GRCh37/coloc/eQTL_Catalogue/${gwas_source}/${eqtl_source}/${ge_source}/ldpairs/coloc_ld_snps.txt"
+loops="results/main/h3k27ac_hichip/${loop_source}/FitHiChIP_S/FitHiChIP.interactions_FitHiC_Q0.01.bed"
+genome_sizes="results/refs/hg19/hg19.chrom.sizes"
+gencode="results/refs/gencode/v30/gencode.v30.annotation.grch37.bed"
+echo "input.eqtl: ${eqtl} - $(path_exists $eqtl)"
+echo "input.coloc: ${coloc} - $(path_exists $coloc)"
+echo "input.loops: ${loops} - $(path_exists $loops)"
+echo "input.genome_sizes: ${genome_sizes} - $(path_exists $genome_sizes)"
+echo "input.gencode: ${gencode} - $(path_exists $gencode)"
+echo
+
+# setting the output paths
+outdir="results/main/GRCh37/sgls/ldpairs/${eqtl_db}/${gwas_source}/${eqtl_source}/${ge_source}/${loop_source}/script_version/"
+echo "outdir: ${outdir} - $(path_exists $outdir)"
+echo
+
+# stop running if output exists
+if [[ -e "${outdir}" ]]
+then
+    echo "outdir: ${outdir} already exists."
+    echo "Not running the rest of this script."
+
+    # end message
+    echo "End Job"
+    exit
+fi
+
+# setting params 
+loop_slop=5000
+
+# make output directories that are not present 
+mkdir -p $(dirname ${outdir})
+
+# Find SGL for Coloc and LD Script Version
+echo "# Find SGL for Coloc and LD Script Version"
+if [[ "$eqtl_db" == "ImmuNexUT" ]]
+then
+read -r cmd << EOM
+${hichip_db_py} workflow/scripts/sgls/Find_SGLs.Generalized.py \
+                --eqtls $eqtl \
+                --colocs $coloc \
+                --loops $loops \
+                --gs $genome_sizes \
+                --gene-ref $gencode \
+                --loop-slop $loop_slop \
+                --outdir $outdir \
+                --eqtl-chr 1 \
+                --eqtl-pos 2 \
+                --eqtl-pvalue 6 \
+                --eqtl-beta 5 \
+                --eqtl-geneid 3 \
+                --eqtl-dist 4 \
+                --eqtl-fdr 7 \
+                --coloc-chr 1 \
+                --coloc-pos 2 \
+                --coloc-gid 10 \
+                --loop-chrA 1 \
+                --loop-startA 2 \
+                --loop-endA 3 \
+                --loop-chrB 4 \
+                --loop-startB 5 \
+                --loop-endB 6 \
+                --loop-score 20
+EOM
+elif [[ "$eqtl_db" == "eQTL_Catalogue" ]]
+then
+read -r cmd << EOM
+${hichip_db_py} workflow/scripts/sgls/Find_SGLs.Generalized.py \
+                --eqtls $eqtl \
+                --colocs $coloc \
+                --loops $loops \
+                --gs $genome_sizes \
+                --gene-ref $gencode \
+                --loop-slop $loop_slop \
+                --outdir $outdir \
+                --eqtl-chr 2 \
+                --eqtl-pos 3 \
+                --eqtl-pvalue 9 \
+                --eqtl-beta 10 \
+                --eqtl-geneid 17 \
+                --eqtl-dist 20 \
+                --eqtl-fdr 21 \
+                --coloc-chr 1 \
+                --coloc-pos 2 \
+                --coloc-gid 10 \
+                --loop-chrA 1 \
+                --loop-startA 2 \
+                --loop-endA 3 \
+                --loop-chrB 4 \
+                --loop-startB 5 \
+                --loop-endB 6 \
+                --loop-score 20
+EOM
+fi
+echo "Running: ${cmd}"
+echo
+eval $cmd
+
+# end message
+echo "End Job"

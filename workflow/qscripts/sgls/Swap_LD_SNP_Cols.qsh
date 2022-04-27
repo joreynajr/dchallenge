@@ -1,0 +1,101 @@
+#PBS -l nodes=1:ppn=1
+#PBS -l mem=2gb
+#PBS -l walltime=100:00:00
+#PBS -e results/main/coloc/logs/
+#PBS -o results/main/coloc/logs/
+#PBS -N Swap_LD_SNP_Cols
+#PBS -d .
+#PBS -V
+
+# # run bash in strict mode
+set -euo pipefail
+IFS=$'\n\t'
+
+# dummy value when not running with qsub
+echo
+if [[ -z ${PBS_ARRAYID+x} ]]
+then
+    echo "Running with bash, setting PBS_ARRAYID=\$1=$1"
+    PBS_ARRAYID=$1
+else
+    echo "Running with qsub, PBS_ARRAYID=$PBS_ARRAYID"
+fi
+echo
+
+# load helper functions and paths
+source workflow/qscripts/helper_functions.sh
+
+# start message
+echo "Start Job"
+
+# extracting sample information
+IFS=$'\t'
+samplesheet="config/coloc_samplesheets/coloc.samplesheet.tsv"
+run_info=( $(sed -n "${PBS_ARRAYID}p" $samplesheet) )
+echo "Using samplesheet: ${samplesheet}"
+gwas_source=${run_info[0]}
+eqtl_source=${run_info[1]}
+ge_source=${run_info[2]}
+IFS=$'\n\t' # can go back to using \n\t
+
+if [[ "$eqtl_source" == "ImmuNexUT" ]]
+then
+    eqtl_db="ImmuNexUT"
+else
+    eqtl_db="eQTL_Catalogue"
+fi
+
+# printing log information
+echo "gwas_source: $gwas_source"
+echo "eqtl_db: $eqtl_db"
+echo "eqtl_source: $eqtl_source"
+echo "ge_source: $ge_source"
+echo
+
+# setting the input paths
+coloc="results/main/GRCh37/coloc/eQTL_Catalogue/${gwas_source}/${eqtl_source}/${ge_source}/ldpairs/coloc_ld_snps.txt"
+echo "input.coloc: ${coloc} - $(path_exists $coloc)"
+echo
+
+# setting the output paths
+output="results/main/GRCh37/coloc/eQTL_Catalogue/${gwas_source}/${eqtl_source}/${ge_source}/ldpairs/coloc_ld_snps.swapped_ld_cols.tsv"
+echo "output: ${output} - $(path_exists $output)"
+echo
+
+# stop running if output exists
+if [[ -e "${output}" ]]
+then
+    echo "output: ${output} already exists."
+    echo "Not running the rest of this script."
+
+    # end message
+    echo "End Job"
+    exit
+fi
+
+# make output directories that are not present 
+mkdir -p $(dirname ${output})
+
+# Note: Currently these codes are very tailored for ImmuNexUT but I want to make them available for eQTL Catalogue data"
+echo "# Note: Currently these codes are very tailored for ImmuNexUT but I want to make them available for eQTL Catalogue data"
+
+# make the new header and add to the output file 
+echo "# make the new header file"
+read -r cmd << EOM
+head -n 1 ${coloc} | awk 'BEGIN{OFS="\t"}; {print "chr", "pos", \$3, \$4, \$5, \$6, \$7, \$8, \$9, \$10, \$11, \$12, \$13, \$14, \$15, \$16, \$17, \$18, \$19, \$20, \$21, \$22, \$23, \$24, \$25, \$26, "main.chr", "main.pos", \$29, \$30};' > ${output}
+EOM
+echo "Running: ${cmd}"
+echo
+eval $cmd
+
+# Swap LD SNP cols with the original SNP cols
+echo "# Swap LD SNP cols with the original SNP cols"
+read -r cmd << EOM
+sed '1d' ${coloc} | awk 'BEGIN{OFS="\t"}; {print \$27, \$28, \$3, \$4, \$5, \$6, \$7, \$8, \$9, \$10, \$11, \$12, \$13, \$14, \$15, \$16, \$17, \$18, \$19, \$20, \$21, \$22, \$23, \$24, \$25, \$26, \$1, \$2, \$29, \$30};' >> ${output}
+EOM
+echo "Running: ${cmd}"
+echo
+eval $cmd
+
+# end message
+echo "End Job"

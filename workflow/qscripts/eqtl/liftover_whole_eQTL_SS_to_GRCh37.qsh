@@ -33,12 +33,12 @@ echo "Start Job"
 
 # extracting sample information
 IFS=$'\t'
-samplesheet="config/coloc_samplesheets/coloc.samplesheet.tsv"
+samplesheet="config/eqtl_samplesheets/eqtl.t1d_only.txt"
 run_info=( $(sed -n "${PBS_ARRAYID}p" $samplesheet) )
 echo "Using samplesheet: ${samplesheet}"
-gwas_source=${run_info[0]}
-eqtl_source=${run_info[1]}
-ge_source=${run_info[2]}
+eqtl_source=${run_info[0]}
+ge_source=${run_info[1]}
+
 IFS=$'\n\t' # can go back to using \n\t
 
 if [[ "$eqtl_source" == "ImmuNexUT" ]]
@@ -49,21 +49,31 @@ else
 fi
 
 # printing log information
-echo "gwas_source: $gwas_source"
 echo "eqtl_db: $eqtl_db"
 echo "eqtl_source: $eqtl_source"
 echo "ge_source: $ge_source"
 echo
 
 # setting the input paths
-input="results/main/sgls/${eqtl_db}/${gwas_source}/${eqtl_source}/${ge_source}/eqtls.coloc_filtered.tsv.gz"
+input="results/main/eqtl/${eqtl_source}/ge/${eqtl_source}_ge_${ge_source}.all.dist.fdr.tsv.gz"
 echo "input: ${input} - $(path_exists $input)"
 echo
 
 # setting the output paths
-outfn="results/main/GRCh37/sgls/${eqtl_db}/${gwas_source}/${eqtl_source}/${ge_source}/eqtls.coloc_filtered.tsv.gz"
+outfn="results/main/GRCh37/eqtl/${eqtl_db}/${eqtl_source}/${ge_source}/eqtls.full_ss.GRCh37.tsv.gz"
 echo "output.outfn: ${outfn} - $(path_exists $outfn)"
 echo
+
+# stop running if output exists
+if [[ -e "${outfn}" ]]
+then
+    echo "outfn: ${outfn} already exists."
+    echo "Not running the rest of this script."
+
+    # end message
+    echo "End Job"
+    exit
+fi
 
 # setting params 
 if [[ "${eqtl_db}" == "eQTL_Catalogue" ]]
@@ -77,8 +87,8 @@ fi
 
 sep="\t"
 header="TRUE"
-temp_gunzip="results/main/GRCh37/sgls/${eqtl_db}/${gwas_source}/${eqtl_source}/${ge_source}/eqtls.coloc_filtered.temp.tsv"
-temp_liftover="results/main/GRCh37/sgls/${eqtl_db}/${gwas_source}/${eqtl_source}/${ge_source}/eqtls.coloc_filtered.tsv"
+temp_gunzip="results/main/GRCh37/eqtl/${eqtl_db}/${eqtl_source}/${ge_source}/eqtls.full_ss.GRCh37.temp.tsv"
+temp_liftover="results/main/GRCh37/eqtl/${eqtl_db}/${eqtl_source}/${ge_source}/eqtls.full_ss.GRCh37.tsv"
 
 # make output directories that are not present 
 mkdir -p $(dirname ${outfn})

@@ -1,12 +1,14 @@
 #PBS -l nodes=1:ppn=1
-#PBS -l mem=4gb
+#PBS -l mem=16gb
 #PBS -l walltime=100:00:00
 #PBS -e results/main/sgls/logs/
 #PBS -o results/main/sgls/logs/
-#PBS -N liftover_colocalization_hg38_to_hg19
+#PBS -N sig_eqtl_to_washu_bed
 #PBS -d .
 #PBS -V
 
+# liftover_sig_eqtls_to_GRCh37
+#
 # # run bash in strict mode
 set -euo pipefail
 IFS=$'\n\t'
@@ -56,19 +58,19 @@ echo "ge_source: $ge_source"
 echo
 
 # setting the input paths
-input="results/main/coloc/Results/${eqtl_db}/${gwas_source}/${eqtl_source}/${ge_source}/FINAL_Summary_Coloc_Gene_SNP_Pairs.bed"
+input="results/main/GRCh37/eqtl/${eqtl_db}/${eqtl_source}/${ge_source}/eqtls.full_ss.GRCh37.tsv.gz"
 echo "input: ${input} - $(path_exists $input)"
 echo
 
 # setting the output paths
-final="results/main/GRCh37/coloc/Results/eQTL_Catalogue/${gwas_source}/${eqtl_source}/${ge_source}/FINAL_Summary_Coloc_Gene_SNP_Pairs.bed"
-echo "output.final: ${final} - $(path_exists $final)"
+outfn="results/main/GRCh37/sgls/${eqtl_db}/${gwas_source}/${eqtl_source}/${ge_source}/eqtls.coloc_filtered.vcf.gz"
+echo "output.outfn: ${outfn} - $(path_exists $outfn)"
 echo
 
 # stop running if output exists
-if [[ -e "${final}" ]]
+if [[ -e "${outfn}" ]]
 then
-    echo "final: ${final} already exists."
+    echo "outfn: ${outfn} already exists."
     echo "Not running the rest of this script."
 
     # end message
@@ -79,31 +81,58 @@ fi
 # setting params 
 if [[ "${eqtl_db}" == "eQTL_Catalogue" ]]
 then
-    chr=1
-    pos=2
-    sep="\t"
-    header="TRUE"
+    chr=2
+    pos=3
+    fdr=9
 else
     chr=1
     pos=2
-    sep="\t"
-    header="TRUE"
+    fdr=7
 fi
 
-# make output directories that are not present 
-mkdir -p $(dirname ${final})
+interm="results/main/GRCh37/sgls/${eqtl_db}/${gwas_source}/${eqtl_source}/${ge_source}/eqtls.coloc_filtered.vcf"
+sorted="results/main/GRCh37/sgls/${eqtl_db}/${gwas_source}/${eqtl_source}/${ge_source}/eqtls.coloc_filtered.sorted.vcf"
 
-# liftover from GRCh38 to GRCh37"
-echo "# liftover from GRCh38 to GRCh37"
+# make output directories that are not present 
+mkdir -p $(dirname ${outfn})
+
+# convert to vcf
+echo "# convert to vcf"
 read -r cmd << EOM
-${hichip_db_py} workflow/scripts/utilities/general_liftover.py \
-            -i ${input} \
-            -o ${final} \
-            --chr-col ${chr} \
-            --pos-col ${pos} \
-            --header \
-            --sep "${sep}"
+zcat $input | \
+          sed '1d' | \
+          awk 'BEGIN{OFS="\t"}; {if (\$$fdr < 0.05) print \$0};' | \
+          python workflow/scripts/utilities/WashU_Converters.py \
+                --convert-from bp --convert-to vcf --chr ${chr} --pos ${pos} > $interm
 EOM
+echo "Running: ${cmd}"
+echo
+eval $cmd
+
+# write header to sorted
+echo "# write header to sorted"
+cmd="grep ^# $interm > $sorted"
+echo "Running: ${cmd}"
+echo
+eval $cmd
+
+# sort the interm
+echo "# sort the interm"
+cmd="cat $interm | grep -v ^# | sort -k1n -k2n  | uniq | grep -v na >> $sorted"
+echo "Running: ${cmd}"
+echo
+eval $cmd
+
+# bgzip + tabix
+echo "# bgzip + tabix"
+cmd="${bgzip} -f ${sorted}; $tabix ${sorted}.gz"
+echo "Running: ${cmd}"
+echo
+eval $cmd
+
+# remove intermediate files
+echo "# remove intermediate files"
+cmd="rm $interm"
 echo "Running: ${cmd}"
 echo
 eval $cmd

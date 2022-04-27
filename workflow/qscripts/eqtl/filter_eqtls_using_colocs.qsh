@@ -73,6 +73,17 @@ echo
 outfn="results/main/sgls/${eqtl_db}/${gwas_source}/${eqtl_source}/${ge_source}/eqtls.coloc_filtered.tsv.gz"
 echo "output.outfn: ${outfn} - $(path_exists $outfn)"
 
+# stop running if output exists
+if [[ -e "${outfn}" ]]
+then
+    echo "outfn: ${outfn} already exists."
+    echo "Not running the rest of this script."
+
+    # end message
+    echo "End Job"
+    exit
+fi
+
 # make output directories that are not present 
 mkdir -p $(dirname ${outfn})
 

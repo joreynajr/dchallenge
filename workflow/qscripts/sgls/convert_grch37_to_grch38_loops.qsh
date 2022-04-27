@@ -56,10 +56,22 @@ echo "output.bedpe: ${bedpe}"
 echo "output.cool_grch37: ${cool_grch37}"
 echo "output.cool_grch38: ${cool_grch38}"
 
+# stop running if output exists
+if [[ -e "${dump_grch38}" ]]
+then
+    echo "dump_grch38: ${dump_grch38} already exists."
+    echo "Not running the rest of this script."
+
+    # end message
+    echo "End Job"
+    exit
+fi
+
 # setting the params paths
 genomesizes_grch37="results/refs/hg19/hg19.chrom.sizes"
 genomesizes_grch38="results/refs/hg38/hg38.chrom.sizes"
 res=5000
+
 
 # make output directories that are not present 
 mkdir -p $(dirname $bedpe)

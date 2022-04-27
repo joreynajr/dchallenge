@@ -1,9 +1,9 @@
 #PBS -l nodes=1:ppn=1
-#PBS -l mem=4gb
+#PBS -l mem=20gb
 #PBS -l walltime=100:00:00
-#PBS -e results/main/sgls/logs/
-#PBS -o results/main/sgls/logs/
-#PBS -N liftover_colocalization_hg38_to_hg19
+#PBS -e results/main/coloc/logs/
+#PBS -o results/main/coloc/logs/
+#PBS -N find_ldpairs_for_coloc_snps
 #PBS -d .
 #PBS -V
 
@@ -56,46 +56,62 @@ echo "ge_source: $ge_source"
 echo
 
 # setting the input paths
-input="results/main/coloc/Results/${eqtl_db}/${gwas_source}/${eqtl_source}/${ge_source}/FINAL_Summary_Coloc_Gene_SNP_Pairs.bed"
-echo "input: ${input} - $(path_exists $input)"
+snp_file="results/main/GRCh37/coloc/Results/eQTL_Catalogue/${gwas_source}/${eqtl_source}/${ge_source}/FINAL_Summary_Coloc_Gene_SNP_Pairs.bed"
+onekg_dir="/mnt/BioAdHoc/Groups/vd-vijay/Ariel/R24_new/LD-snps-1000G/DupsRemoved/"
+population_dir="/mnt/BioAdHoc/Groups/vd-vijay/Ariel/R24_new/LD-snps/lists-pops/"
+snpinfo_dir="/mnt/BioAdHoc/Groups/vd-vijay/sourya/Projects/2020_IQTL_HiChIP/Data/SNPInfo/SNPInfo_merged_tables/"
+echo "input.snp_file: ${snp_file} - $(path_exists $snp_file)"
+echo "input.onekg_dir: ${onekg_dir} - $(path_exists $onekg_dir)"
+echo "input.population_dir: ${population_dir} - $(path_exists $population_dir)"
+echo "input.snpinfo_dir: ${snpinfo_dir} - $(path_exists $snpinfo_dir)"
 echo
 
 # setting the output paths
-final="results/main/GRCh37/coloc/Results/eQTL_Catalogue/${gwas_source}/${eqtl_source}/${ge_source}/FINAL_Summary_Coloc_Gene_SNP_Pairs.bed"
-echo "output.final: ${final} - $(path_exists $final)"
+ld="results/main/GRCh37/coloc/eQTL_Catalogue/${gwas_source}/${eqtl_source}/${ge_source}/ldpairs/coloc_ld_snps.txt"
+echo "output.ld: ${ld} - $(path_exists $ld)"
 echo
 
-# setting params 
-if [[ "${eqtl_db}" == "eQTL_Catalogue" ]]
+# stop running if output exists
+if [[ -e "${ld}" ]]
 then
-    chr=1
-    pos=2
-    sep="\t"
-    header="TRUE"
-else
-    chr=1
-    pos=2
-    sep="\t"
-    header="TRUE"
+    echo "ld: ${ld} already exists."
+    echo "Not running the rest of this script."
+
+    # end message
+    echo "End Job"
+    exit
 fi
 
-# make output directories that are not present 
-mkdir -p $(dirname ${final})
+# setting params 
+workdir="results/main/GRCh37/coloc/eQTL_Catalogue/${gwas_source}/${eqtl_source}/${ge_source}/ldpairs/"
+chr_col=1
+pos_col=2
 
-# liftover from GRCh38 to GRCh37"
-echo "# liftover from GRCh38 to GRCh37"
+# make output directories that are not present 
+mkdir -p $(dirname ${ld})
+
+# find ldpairs for coloc snps
+echo "# find ldpairs for coloc snps"
 read -r cmd << EOM
-${hichip_db_py} workflow/scripts/utilities/general_liftover.py \
-            -i ${input} \
-            -o ${final} \
-            --chr-col ${chr} \
-            --pos-col ${pos} \
+$hichip_db_Rscript workflow/scripts/ldpairs/ldpair_with_plink.R \
+            --snp-file ${snp_file} \
+            --onekg-dir ${onekg_dir}/ \
+            --population-dir ${population_dir}/ \
+            --snpinfo-dir ${snpinfo_dir}/ \
             --header \
-            --sep "${sep}"
+            --chr-prefix \
+            --chr-col ${chr_col} \
+            --pos-col ${pos_col} \
+            --workdir ${workdir}
 EOM
 echo "Running: ${cmd}"
 echo
 eval $cmd
+
+# Rename/move ld SNP file"
+echo "# Rename/move ld SNP file"
+old_fn="${workdir}/Out_Merge_LD.txt";
+mv $old_fn ${ld}
 
 # end message
 echo "End Job"

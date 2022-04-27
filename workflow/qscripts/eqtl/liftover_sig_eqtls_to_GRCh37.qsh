@@ -3,7 +3,7 @@
 #PBS -l walltime=100:00:00
 #PBS -e results/main/sgls/logs/
 #PBS -o results/main/sgls/logs/
-#PBS -N liftover_colocalization_hg38_to_hg19
+#PBS -N liftover_sig_eqtls_to_GRCh37
 #PBS -d .
 #PBS -V
 
@@ -56,19 +56,19 @@ echo "ge_source: $ge_source"
 echo
 
 # setting the input paths
-input="results/main/coloc/Results/${eqtl_db}/${gwas_source}/${eqtl_source}/${ge_source}/FINAL_Summary_Coloc_Gene_SNP_Pairs.bed"
+input="results/main/sgls/${eqtl_db}/${gwas_source}/${eqtl_source}/${ge_source}/eqtls.coloc_filtered.tsv.gz"
 echo "input: ${input} - $(path_exists $input)"
 echo
 
 # setting the output paths
-final="results/main/GRCh37/coloc/Results/eQTL_Catalogue/${gwas_source}/${eqtl_source}/${ge_source}/FINAL_Summary_Coloc_Gene_SNP_Pairs.bed"
-echo "output.final: ${final} - $(path_exists $final)"
+outfn="results/main/GRCh37/sgls/${eqtl_db}/${gwas_source}/${eqtl_source}/${ge_source}/eqtls.coloc_filtered.tsv.gz"
+echo "output.outfn: ${outfn} - $(path_exists $outfn)"
 echo
 
 # stop running if output exists
-if [[ -e "${final}" ]]
+if [[ -e "${outfn}" ]]
 then
-    echo "final: ${final} already exists."
+    echo "outfn: ${outfn} already exists."
     echo "Not running the rest of this script."
 
     # end message
@@ -79,31 +79,46 @@ fi
 # setting params 
 if [[ "${eqtl_db}" == "eQTL_Catalogue" ]]
 then
-    chr=1
-    pos=2
-    sep="\t"
-    header="TRUE"
+    chr=2
+    pos=3
 else
     chr=1
     pos=2
-    sep="\t"
-    header="TRUE"
 fi
 
-# make output directories that are not present 
-mkdir -p $(dirname ${final})
+sep="\t"
+header="TRUE"
+temp_gunzip="results/main/GRCh37/sgls/${eqtl_db}/${gwas_source}/${eqtl_source}/${ge_source}/eqtls.coloc_filtered.temp.tsv"
+temp_liftover="results/main/GRCh37/sgls/${eqtl_db}/${gwas_source}/${eqtl_source}/${ge_source}/eqtls.coloc_filtered.tsv"
 
-# liftover from GRCh38 to GRCh37"
+# make output directories that are not present 
+mkdir -p $(dirname ${outfn})
+
+# uncompress the input
+echo "# uncompress the input"
+cmd="gzip -d -c ${input} > ${temp_gunzip}"
+echo "Running: ${cmd}"
+echo
+eval $cmd
+
+# liftover from GRCh38 to GRCh37
 echo "# liftover from GRCh38 to GRCh37"
 read -r cmd << EOM
 ${hichip_db_py} workflow/scripts/utilities/general_liftover.py \
-            -i ${input} \
-            -o ${final} \
-            --chr-col ${chr} \
-            --pos-col ${pos} \
-            --header \
-            --sep "${sep}"
+        -i ${temp_gunzip} \
+        -o ${temp_liftover} \
+        --chr-col ${chr} \
+        --pos-col ${pos} \
+        --header \
+        --sep "${sep}"
 EOM
+echo "Running: ${cmd}"
+echo
+eval $cmd
+
+# compress the final temp file
+echo "# compress the final temp file"
+cmd="gzip ${temp_liftover}"
 echo "Running: ${cmd}"
 echo
 eval $cmd
