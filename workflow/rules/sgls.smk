@@ -1,15 +1,26 @@
 # Filter for eQTLs with colocalizations for annotations purposes
 # Issue: Doesnt seem like I need it because the colocalization script takes 
 # care of this now. 
+#
+def get_filter_eqtls_using_colocs_eqtl(wildcards): #(Status: running)
+    if wildcards.eqtl_source == 'ImmuNexUT':
+        eqtl_fn = 'results/main/eqtl/ImmuNexUT/ge/ImmuNexUT_ge_{ge_source}.all.immunexut.dist.fdr.tsv.gz'
+    else:
+        eqtl_fn = 'results/main/eqtl/{eqtl_source}/ge/{eqtl_source}_ge_{ge_source}.all.dist.fdr.tsv.gz'
+    eqtl_fn = eqtl_fn.format(**wildcards)
+    print('eqtl_fn: {}'.format(eqtl_fn))
+    return(eqtl_fn)
+
+
+# eqtl = rules.add_missing_cols.output,
 rule filter_eqtls_using_colocs: #(Status: running)
     input:
-        eqtl = rules.add_missing_cols.output,
-        coloc_dir = rules.run_colocalization_eqtl_catalog.output,
-        coloc = 'results/main/coloc/Results/eQTL_Catalogue/{gwas_source}/{eqtl_source}/{ge_source}/FINAL_Summary_Coloc_Gene_SNP_Pairs.bed'
+        eqtl = get_filter_eqtls_using_colocs_eqtl,
+        coloc = 'results/main/coloc/Results/{eqtl_db}/{gwas_source}/{eqtl_source}/{ge_source}/FINAL_Summary_Coloc_Gene_SNP_Pairs.bed'
     output:
-        outfn = 'results/main/sgls/{gwas_source}/{eqtl_source}/{ge_source}/eqtls.coloc_filtered.tsv.gz'
+        outfn = 'results/main/sgls/{eqtl_db}/{gwas_source}/{eqtl_source}/{ge_source}/eqtls.coloc_filtered.tsv.gz'
     log: 
-        'results/main/sgls/logs/filter_eqtls_using_colocs.{gwas_source}.{eqtl_source}.{ge_source}.log'
+        'results/main/sgls/logs/filter_eqtls_using_colocs.{eqtl_db}.{gwas_source}.{eqtl_source}.{ge_source}.log'
     shell:
         r'''
             python workflow/scripts/sgls/Filter_eQTLs_with_Colocs.py \
@@ -18,21 +29,22 @@ rule filter_eqtls_using_colocs: #(Status: running)
                                         {output}
         '''
 
+
 # liftover the significant eQTLs to GRCh37
 rule liftover_sig_eqtls_to_GRCh37: # (Status: running)
     input:
         rules.filter_eqtls_using_colocs.output.outfn
     output:
-        outfn = 'results/main/GRCh37/sgls/{gwas_source}/{eqtl_source}/{ge_source}/eqtls.coloc_filtered.tsv.gz'
+        outfn = 'results/main/GRCh37/sgls/{eqtl_db}/{gwas_source}/{eqtl_source}/{ge_source}/eqtls.coloc_filtered.tsv.gz'
     params:
         chr = 2,
         pos = 3,
         sep = '\t',
         header = 'TRUE',
-        temp_gunzip = 'results/main/GRCh37/sgls/{gwas_source}/{eqtl_source}/{ge_source}/eqtls.coloc_filtered.temp.tsv',
-        temp_liftover = 'results/main/GRCh37/sgls/{gwas_source}/{eqtl_source}/{ge_source}/eqtls.coloc_filtered.tsv'
+        temp_gunzip = 'results/main/GRCh37/sgls/{eqtl_db}/{gwas_source}/{eqtl_source}/{ge_source}/eqtls.coloc_filtered.temp.tsv',
+        temp_liftover = 'results/main/GRCh37/sgls/{eqtl_db}/{gwas_source}/{eqtl_source}/{ge_source}/eqtls.coloc_filtered.tsv'
     log: 
-        'results/main/GRCh37/sgls/logs/liftover_sig_eqtls_to_GRCh37.{gwas_source}.{eqtl_source}.{ge_source}.log'
+        'results/main/GRCh37/sgls/logs/liftover_sig_eqtls_to_GRCh37.{eqtl_db}.{gwas_source}.{eqtl_source}.{ge_source}.log'
     shell:
         r"""
             # uncompress the input
@@ -237,10 +249,10 @@ rule Find_SGL_for_Coloc_and_LD_Script_Version: #(Status: developing)
         genome_sizes = 'results/refs/hg19/hg19.chrom.sizes',
         gencode = 'results/refs/gencode/v30/gencode.v30.annotation.grch37.bed'
     output:
-        outdir = directory('results/main/GRCh37/sgls/ldpairs/{gwas_source}/{eqtl_source}/{ge_source}/{loop_source}/script_version/')
+        outdir = directory('results/main/GRCh37/sgls/ldpairs/{eqtl_db}/{gwas_source}/{eqtl_source}/{ge_source}/{loop_source}/script_version/')
     log: 
         #notebook='results/main/sgls/logs/annotate_colocs.{gwas_source}.{eqtl_source}.{ge_source}.{loop_source}.ipynb' #not working, JSON Error
-        'results/main/sgls/logs/annotate_colocs.{gwas_source}.{eqtl_source}.{ge_source}.{loop_source}.log'
+        'results/main/sgls/logs/annotate_colocs.{eqtl_db}.{gwas_source}.{eqtl_source}.{ge_source}.{loop_source}.log'
     params:
         loop_slop = 25000
     resources:
@@ -249,7 +261,7 @@ rule Find_SGL_for_Coloc_and_LD_Script_Version: #(Status: developing)
         ppn = 1,
     shell:
         r"""
-            python workflow/scripts/sgls/Find_SGLs.eQTL_Catalogue_Format.v3.with_LDPairs.py \
+            {config[hichip_db_py]} workflow/scripts/sgls/Find_SGLs.eQTL_Catalogue_Format.v3.with_LDPairs.py \
                 {input.eqtl} \
                 {input.coloc} \
                 {input.loops} \
