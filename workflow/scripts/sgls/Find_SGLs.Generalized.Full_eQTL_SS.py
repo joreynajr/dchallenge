@@ -341,9 +341,6 @@ else:
 print('There are {} Genes which overlap a loop anchor.'.format(len(colocGene_anchors_set)))
 
 # ### Creating a mapper between coloc id and loop id
-print("pr_sgls.head()")
-print(pr_sgls.head())
-
 coloc_loop_mapper = pr_sgls.iloc[:, [6, 19]]
 coloc_loop_mapper.columns = ['coloc.id', 'loop.id']
 coloc_loop_mapper.drop_duplicates(inplace=True)
@@ -361,7 +358,7 @@ print('Master is starting with {} candidate snp-gene pairs.'.format(master.shape
 print('#### Add eqtl results')
 
 # get SNP eQTL's; filtering required for eQTL Catalogue data
-eqtls = pd.read_table(params.eqtls, header=0) #, nrows=1000000)
+eqtls = pd.read_table(params.eqtls, header=0)
 
 # gathering a dictionary of eqtl renames
 # renaming must be one AFTER reordering columns
