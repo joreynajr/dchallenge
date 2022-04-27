@@ -1,0 +1,6 @@
+gwas	eqtl_db	eqtl_origin	loop_origin
+T1D_34012112_Gaulton	Schmiedel_2018	monocyte_naive	monocyte_naive
+T1D_34012112_Gaulton	Schmiedel_2018	NK-cell_naive	NK-cell_naive
+T1D_34012112_Gaulton	Schmiedel_2018	B-cell_naive	B-cell_naive
+T1D_34012112_Gaulton	Schmiedel_2018	CD4_T-cell_naive	CD4_T-cell_naive
+T1D_34012112_Gaulton	Schmiedel_2018	CD8_T-cell_naive	CD8_T-cell_naive
